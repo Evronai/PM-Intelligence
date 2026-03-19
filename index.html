@@ -1,0 +1,3074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EvronAI — Project Management Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root {
+  --bg-dark: #08080f;
+  --surface-dark: #0f0f1a;
+  --surface2-dark: #171726;
+  --border-dark: #252538;
+  --text-dark: #eeeef5;
+  --muted-dark: #8888a8;
+  --bg-light: #f2f4fb;
+  --surface-light: #ffffff;
+  --surface2-light: #eaecf6;
+  --border-light: #d0d5e8;
+  --text-light: #16192e;
+  --muted-light: #5a6280;
+  --accent: #6c63ff;
+  --accent-dim: rgba(108,99,255,0.15);
+  --accent2: #00d4aa;
+  --accent2-dim: rgba(0,212,170,0.12);
+  --danger: #ff4757;
+  --warn: #ffa502;
+  --trello: #0079BF;
+  --jira: #0052CC;
+  --gmail: #EA4335;
+  --slack: #E01E5A;
+  --monday: #F62F5E;
+  --asana: #FC636B;
+  --bg: var(--bg-dark);
+  --surface: var(--surface-dark);
+  --surface2: var(--surface2-dark);
+  --border: var(--border-dark);
+  --text: var(--text-dark);
+  --muted: var(--muted-dark);
+}
+body.light {
+  --bg: var(--bg-light);
+  --surface: var(--surface-light);
+  --surface2: var(--surface2-light);
+  --border: var(--border-light);
+  --text: var(--text-light);
+  --muted: var(--muted-light);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(108,99,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108,99,255,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; align-items: center;
+  height: 58px; gap: 12px;
+}
+.logo {
+  font-size: 22px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px; cursor: pointer; user-select: none;
+}
+.header-divider { width: 1px; height: 24px; background: var(--border); }
+.header-tag {
+  font-size: 10px; font-weight: 700; color: var(--accent2);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  background: var(--accent2-dim);
+  padding: 3px 8px; border-radius: 20px;
+}
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  height: 34px; border-radius: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 12px;
+  transition: all 0.18s; font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 600;
+}
+.icon-btn .btn-label {
+  font-size: 12px; font-weight: 600;
+}
+@media (max-width: 600px) {
+  .icon-btn .btn-label { display: none; }
+  .icon-btn { padding: 0 10px; }
+}
+.icon-btn:hover { color: var(--text); border-color: var(--accent); }
+.nav-pill {
+  font-size: 12px; font-weight: 700; padding: 7px 16px;
+  border-radius: 20px; border: 1px solid var(--border);
+  background: none; color: var(--muted); cursor: pointer;
+  transition: all 0.18s; font-family: 'Syne', sans-serif;
+}
+.nav-pill:hover, .nav-pill.active {
+  background: var(--accent-dim); color: var(--accent);
+  border-color: var(--accent);
+}
+.btn-connect {
+  font-size: 12px; font-weight: 700; padding: 7px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border: none; color: #fff; cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  transition: opacity 0.18s;
+}
+.btn-connect:hover { opacity: 0.88; }
+
+/* ── LAYOUT ── */
+.app { display: flex; height: calc(100vh - 58px); position: relative; z-index: 1; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 256px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+.ai-hero {
+  margin: 14px; padding: 16px;
+  background: linear-gradient(135deg, var(--accent-dim), var(--accent2-dim));
+  border: 1px solid rgba(108,99,255,0.25);
+  border-radius: 12px;
+}
+.ai-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 800; color: #fff;
+  box-shadow: 0 4px 16px rgba(108,99,255,0.35);
+  margin-bottom: 10px;
+}
+.ai-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.ai-status { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent2);
+  animation: pulse 2s infinite;
+}
+.pulse-dot.offline { background: var(--danger); animation: none; }
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.45; transform:scale(0.8); }
+}
+.sidebar-section { padding: 14px 12px 6px; }
+.section-label {
+  font-size: 9.5px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 6px; padding: 0 4px;
+}
+.src-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 8px; cursor: pointer;
+  margin-bottom: 1px; transition: all 0.15s;
+  border: 1px solid transparent;
+  color: var(--muted); font-size: 13px; font-weight: 600;
+}
+.src-row:hover { background: var(--surface2); color: var(--text); }
+.src-row.active { background: var(--surface2); border-color: var(--border); color: var(--text); }
+.src-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.src-count {
+  margin-left: auto; font-size: 10px; font-weight: 700;
+  background: var(--surface); padding: 1px 7px;
+  border-radius: 20px; border: 1px solid var(--border);
+  color: var(--muted);
+}
+.src-row.active .src-count { border-color: var(--accent); color: var(--accent); }
+.add-src-btn {
+  width: 100%; padding: 8px; border-radius: 8px;
+  border: 1px dashed var(--border); background: none;
+  color: var(--muted); cursor: pointer; font-size: 12px;
+  font-weight: 600; margin-top: 6px; transition: all 0.18s;
+  font-family: 'Syne', sans-serif;
+}
+.add-src-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  background: var(--surface); flex-wrap: wrap;
+}
+.search-wrap {
+  flex: 1; min-width: 160px; max-width: 320px;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 12px;
+  transition: border-color 0.18s;
+}
+.search-wrap:focus-within { border-color: var(--accent); }
+.search-wrap input {
+  background: none; border: none; outline: none;
+  color: var(--text); width: 100%; font-size: 13px;
+  font-family: 'Syne', sans-serif;
+}
+.search-wrap input::placeholder { color: var(--muted); }
+.tb-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text); cursor: pointer; font-size: 12px;
+  font-weight: 700; font-family: 'Syne', sans-serif;
+  transition: all 0.18s; white-space: nowrap;
+}
+.tb-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tb-btn.primary {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border: none; color: #fff;
+}
+.tb-btn.primary:hover { opacity: 0.88; }
+.tb-btn.icon-only { padding: 7px 10px; }
+.view-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.view-btn {
+  padding: 7px 10px; background: var(--surface2);
+  border: none; color: var(--muted); cursor: pointer;
+  font-size: 13px; transition: all 0.15s;
+}
+.view-btn.active { background: var(--accent-dim); color: var(--accent); }
+
+/* Auto-refresh indicator */
+.refresh-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--muted); display: inline-block;
+  margin-left: 4px; vertical-align: middle;
+  transition: background 0.3s;
+}
+.refresh-dot.active { background: var(--accent2); animation: pulse 2s infinite; }
+
+/* Notification badge */
+.notif-btn { position: relative; }
+.notif-badge {
+  position: absolute; top: -4px; right: -4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--danger); color: #fff;
+  font-size: 9px; font-weight: 800;
+  display: none; align-items: center; justify-content: center;
+}
+.notif-badge.show { display: flex; }
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  .app { flex-direction: column; height: auto; min-height: calc(100vh - 58px); }
+  .sidebar { width: 100%; flex-direction: row; overflow-x: auto; overflow-y: hidden;
+    border-right: none; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar .ai-hero { display: none; } /* hide on mobile to save space */
+  .sidebar .sidebar-section { display: flex; flex-direction: row; padding: 8px 12px; gap: 4px; }
+  .sidebar .section-label { display: none; }
+  .src-row { flex-shrink: 0; padding: 6px 10px; white-space: nowrap; }
+  .src-row span:not(.src-count) { display: none; } /* icon only on mobile */
+  .add-src-btn { display: none; }
+  .main { flex: 1; overflow: hidden; }
+  .toolbar { padding: 8px 12px; gap: 6px; }
+  .search-wrap { max-width: 100%; }
+  .tb-btn span { display: none; } /* icon-only buttons on mobile */
+  .tb-btn { padding: 7px 10px; }
+  #sort-sel { display: none; }
+  .ai-panel { width: 100%; border-left: none; border-top: 1px solid var(--border);
+    height: 50vh; flex-shrink: 0; }
+  .tasks-area { padding: 12px; }
+  .tasks-grid { grid-template-columns: 1fr; }
+  .task-card .card-actions { opacity: 1; } /* always show on touch */
+}
+@media (max-width: 480px) {
+  header { padding: 0 12px; }
+  .header-tag { display: none; }
+}
+
+/* ── TASKS ── */
+.tasks-area { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+.tasks-list { display: flex; flex-direction: column; gap: 8px; }
+
+/* Task card */
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+  transition: all 0.22s; position: relative;
+  cursor: default;
+}
+.task-card:hover { border-color: rgba(108,99,255,0.5); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+.task-card:hover .card-actions { opacity: 1; }
+.card-actions {
+  position: absolute; top: 12px; right: 12px;
+  display: flex; gap: 4px; opacity: 0; transition: opacity 0.18s;
+}
+.ca-btn {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--muted); cursor: pointer; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.ca-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ca-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+.src-badge {
+  font-size: 9px; font-weight: 700; padding: 3px 8px;
+  border-radius: 4px; display: inline-flex; align-items: center;
+  gap: 4px; margin-bottom: 9px; text-transform: uppercase;
+}
+.src-badge.trello { background: rgba(0,121,191,0.15); color: #4db8ff; }
+.src-badge.jira { background: rgba(0,82,204,0.15); color: #6ba9ff; }
+.src-badge.gmail { background: rgba(234,67,53,0.15); color: #ea4335; }
+.src-badge.slack { background: rgba(224,30,90,0.15); color: #e01e5a; }
+.src-badge.monday { background: rgba(246,47,94,0.15); color: #f62f5e; }
+.src-badge.asana { background: rgba(252,99,107,0.15); color: #fc636b; }
+.src-badge.ai { background: rgba(108,99,255,0.15); color: var(--accent); }
+.card-title {
+  font-size: 13.5px; font-weight: 700; margin-bottom: 8px;
+  color: var(--text); padding-right: 80px; line-height: 1.4;
+}
+.card-title.editing {
+  padding-right: 0;
+  background: var(--surface2); border: 1px solid var(--accent);
+  border-radius: 6px; padding: 4px 8px; outline: none;
+  width: 100%; font-family: 'Syne', sans-serif;
+  font-size: 13.5px; font-weight: 700; color: var(--text);
+}
+.card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.pri-badge {
+  font-size: 9.5px; font-weight: 700; padding: 2px 8px;
+  border-radius: 4px; text-transform: uppercase;
+}
+.pri-badge.high { background: rgba(255,71,87,0.15); color: var(--danger); }
+.pri-badge.medium { background: rgba(255,165,2,0.15); color: var(--warn); }
+.pri-badge.low { background: rgba(0,212,170,0.15); color: var(--accent2); }
+.status-pill {
+  font-size: 9.5px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; text-transform: uppercase; cursor: pointer;
+  transition: all 0.15s; border: 1px solid transparent;
+}
+.status-pill.todo { background: var(--surface2); color: var(--muted); border-color: var(--border); }
+.status-pill.in_progress { background: rgba(108,99,255,0.12); color: var(--accent); border-color: rgba(108,99,255,0.3); }
+.status-pill.done { background: rgba(0,212,170,0.12); color: var(--accent2); border-color: rgba(0,212,170,0.3); }
+.card-desc { font-size: 12px; color: var(--muted); line-height: 1.55; }
+.card-board { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+/* List view */
+.task-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  transition: all 0.18s;
+}
+.task-row:hover { border-color: rgba(108,99,255,0.4); }
+.task-row:hover .card-actions { opacity: 1; }
+.task-row .card-actions { position: relative; top: auto; right: auto; margin-left: auto; }
+.task-row .card-title { margin-bottom: 0; padding-right: 0; flex: 1; }
+
+/* Empty state */
+.empty-state {
+  grid-column: 1/-1; text-align: center;
+  padding: 80px 20px; color: var(--muted);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+.empty-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+.empty-sub { font-size: 13px; }
+
+/* ── AI PANEL ── */
+.ai-panel {
+  width: 400px; flex-shrink: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+.panel-hdr {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+}
+.panel-ai-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.panel-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+  box-shadow: 0 4px 12px rgba(108,99,255,0.3);
+}
+.panel-name { font-size: 16px; font-weight: 800; color: var(--text); }
+.panel-sub { font-size: 11px; color: var(--accent2); font-weight: 600; margin-top: 2px; }
+.api-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; padding: 3px 10px;
+  background: var(--surface2); border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.api-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); }
+.api-dot.on { background: var(--accent2); }
+.stats-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-top: 12px;
+}
+.stat-cell {
+  background: var(--surface2); border-radius: 8px;
+  padding: 10px; text-align: center;
+  border: 1px solid var(--border);
+}
+.stat-num { font-size: 22px; font-weight: 800; color: var(--accent2); }
+.stat-lbl { font-size: 9.5px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+
+/* Chat */
+.chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.msg { max-width: 94%; }
+.msg.user { align-self: flex-end; }
+.msg.ai { align-self: flex-start; }
+.msg-who { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 5px; }
+.msg.ai .msg-who { color: var(--accent); }
+.bubble {
+  padding: 13px 16px; border-radius: 14px;
+  font-size: 13px; line-height: 1.65;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+.msg.user .bubble {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: #fff; border-radius: 14px 14px 4px 14px;
+}
+.msg.ai .bubble {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  color: var(--text);
+}
+/* Typing indicator */
+.typing-bubble {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 13px 16px; border-radius: 14px;
+  display: flex; gap: 5px; align-items: center;
+}
+.typing-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); opacity: 0.5;
+  animation: typingBounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%,80%,100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Quick prompts */
+.quick-bar {
+  padding: 12px 14px; display: flex; flex-wrap: wrap;
+  gap: 6px; border-top: 1px solid var(--border);
+}
+.qp {
+  font-size: 11px; font-weight: 600; padding: 6px 12px;
+  border-radius: 20px; background: var(--surface2);
+  border: 1px solid var(--border); color: var(--muted);
+  cursor: pointer; transition: all 0.18s;
+  font-family: 'Syne', sans-serif;
+}
+.qp:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+/* Input */
+.chat-input-row {
+  padding: 12px 14px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.chat-ta {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 14px;
+  color: var(--text); font-family: 'Syne', sans-serif;
+  font-size: 13px; outline: none; resize: none;
+  line-height: 1.5; max-height: 120px; overflow-y: auto;
+  transition: border-color 0.18s;
+}
+.chat-ta:focus { border-color: var(--accent); }
+.chat-ta::placeholder { color: var(--muted); }
+.send-btn {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border: none; color: #fff; font-size: 17px;
+  cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 16px rgba(108,99,255,0.35); }
+.send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ── ADD TASK MODAL ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 500; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px;
+  width: 520px; max-width: 94vw; max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(16px); transition: transform 0.2s;
+}
+.overlay.open .modal { transform: translateY(0); }
+.modal-hdr {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 22px;
+}
+.modal-title { font-size: 20px; font-weight: 800; color: var(--text); }
+.close-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.close-btn:hover { color: var(--danger); border-color: var(--danger); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  display: block; margin-bottom: 7px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 10px 14px;
+  border-radius: 8px; background: var(--surface2);
+  border: 1px solid var(--border); color: var(--text);
+  font-family: 'Syne', sans-serif; font-size: 13px;
+  outline: none; transition: border-color 0.18s;
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+.form-select option { background: var(--surface); }
+.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+.btn-cancel {
+  padding: 11px 20px; border-radius: 8px;
+  border: 1px solid var(--border); background: none;
+  color: var(--muted); cursor: pointer; font-weight: 700;
+  font-family: 'Syne', sans-serif; transition: all 0.18s;
+}
+.btn-cancel:hover { border-color: var(--text); color: var(--text); }
+.btn-save {
+  flex: 1; padding: 11px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  border: none; color: #fff; font-weight: 700;
+  font-size: 14px; cursor: pointer; font-family: 'Syne', sans-serif;
+  transition: opacity 0.18s;
+}
+.btn-save:hover { opacity: 0.88; }
+
+/* ── CONFIG MODAL ── */
+.cfg-tabs {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 22px; padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.cfg-tab {
+  padding: 7px 14px; border-radius: 20px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 11.5px;
+  font-weight: 700; display: flex; align-items: center; gap: 6px;
+  font-family: 'Syne', sans-serif; transition: all 0.18s;
+}
+.cfg-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.cfg-tab-pane { display: none !important; }
+.cfg-tab-pane.active { display: block !important; }
+.info-box {
+  background: var(--surface2); border-left: 3px solid var(--accent);
+  padding: 14px 16px; border-radius: 0 8px 8px 0;
+  margin-bottom: 18px; font-size: 12.5px; line-height: 1.65;
+}
+.info-box h4 { color: var(--text); margin-bottom: 8px; font-size: 13px; }
+.info-box p, .info-box li { color: var(--muted); margin-bottom: 4px; }
+.info-box ol { margin-left: 18px; }
+.info-box a { color: var(--accent); text-decoration: none; }
+.info-box a:hover { text-decoration: underline; }
+.info-box code {
+  background: var(--surface); padding: 2px 5px;
+  border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+}
+.conn-status {
+  padding: 10px 14px; border-radius: 8px; margin-top: 10px;
+  font-size: 12px; font-weight: 600; display: none;
+}
+.conn-status.ok { background: rgba(0,212,170,0.12); color: var(--accent2); border: 1px solid rgba(0,212,170,0.25); display: block; }
+.conn-status.fail { background: rgba(255,71,87,0.12); color: var(--danger); border: 1px solid rgba(255,71,87,0.25); display: block; }
+
+/* ── TOAST ── */
+.toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 12px 18px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+  animation: toastIn 0.28s ease; min-width: 220px;
+}
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.ok { border-color: var(--accent2); }
+.toast.err { border-color: var(--danger); }
+.toast.info { border-color: var(--accent); }
+
+/* Streaming cursor */
+.stream-cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: var(--accent2);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 0.7s steps(1) infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+/* Sync spin */
+.spin { animation: spinAnim 0.8s linear infinite; display: inline-block; }
+@keyframes spinAnim { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Evron<span>AI</span></div>
+  <div class="header-divider"></div>
+  <div class="header-tag">PM Intelligence</div>
+  <div class="header-right">
+    <button class="icon-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">
+      <i class="fas fa-moon"></i> <span class="btn-label">Theme</span>
+    </button>
+    <button class="icon-btn" onclick="openConfig()" title="Settings">
+      <i class="fas fa-cog"></i> <span class="btn-label">Settings</span>
+    </button>
+    <button class="btn-connect" onclick="openConfig()"><i class="fas fa-plug"></i> Connect Sources</button>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="ai-hero">
+      <div class="ai-avatar">AI</div>
+      <div class="ai-name">EvronAI Assistant</div>
+      <div class="ai-status">
+        <div class="pulse-dot offline" id="sb-dot"></div>
+        <span id="sb-status" style="color:var(--muted);font-size:11px;font-weight:600;">DeepSeek: Not configured</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">Integrations</div>
+      <div class="src-row active" data-src="all" onclick="setFilter(this,'all')">
+        <div class="src-dot" style="background:var(--accent)"></div>
+        <span>All Sources</span>
+        <span class="src-count" id="cnt-all">0</span>
+      </div>
+      <div class="src-row" data-src="trello" onclick="setFilter(this,'trello')">
+        <div class="src-dot" style="background:var(--trello)"></div>
+        <span>Trello</span>
+        <span style="font-size:9px;color:var(--muted);margin-left:2px" id="tr-board-count"></span>
+        <span class="src-count" id="cnt-trello">0</span>
+      </div>
+      <div class="src-row" data-src="jira" onclick="setFilter(this,'jira')">
+        <div class="src-dot" style="background:var(--jira)"></div>
+        <span>Jira</span>
+        <span class="src-count" id="cnt-jira">0</span>
+      </div>
+      <div class="src-row" data-src="gmail" onclick="setFilter(this,'gmail')">
+        <div class="src-dot" style="background:var(--gmail)"></div>
+        <span>Gmail</span>
+        <span class="src-count" id="cnt-gmail">0</span>
+      </div>
+      <div class="src-row" data-src="slack" onclick="setFilter(this,'slack')">
+        <div class="src-dot" style="background:var(--slack)"></div>
+        <span>Slack</span>
+        <span class="src-count" id="cnt-slack">0</span>
+      </div>
+      <div class="src-row" data-src="monday" onclick="setFilter(this,'monday')">
+        <div class="src-dot" style="background:var(--monday)"></div>
+        <span>Monday.com</span>
+        <span class="src-count" id="cnt-monday">0</span>
+      </div>
+      <div class="src-row" data-src="asana" onclick="setFilter(this,'asana')">
+        <div class="src-dot" style="background:var(--asana)"></div>
+        <span>Asana</span>
+        <span class="src-count" id="cnt-asana">0</span>
+      </div>
+      <div class="src-row" data-src="ai" onclick="setFilter(this,'ai')">
+        <div class="src-dot" style="background:var(--accent)"></div>
+        <span>AI Created</span>
+        <span class="src-count" id="cnt-ai">0</span>
+      </div>
+      <button class="add-src-btn" onclick="openConfig()"><i class="fas fa-plus"></i> Add Integration</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="fas fa-search" style="color:var(--muted);font-size:13px"></i>
+        <input type="text" placeholder="Search tasks, boards, descriptions…" id="q" oninput="renderTasks()">
+      </div>
+      <button class="tb-btn" onclick="openAddModal()"><i class="fas fa-plus"></i> <span>Add Task</span></button>
+      <button class="tb-btn" onclick="syncAll()" id="sync-btn"><i class="fas fa-sync-alt" id="sync-icon"></i> <span>Sync</span></button>
+      <button class="tb-btn" onclick="toggleAutoRefresh()" id="ar-btn" title="Auto-refresh">
+        <i class="fas fa-clock"></i> <span id="ar-label">Auto</span><span class="refresh-dot" id="ar-dot"></span>
+      </button>
+      <button class="tb-btn primary" onclick="aiAnalyzeAll()"><i class="fas fa-robot"></i> <span>AI Analyze</span></button>
+      <button class="tb-btn notif-btn" onclick="showNotifications()" id="notif-btn">
+        <i class="fas fa-bell"></i> <span>Alerts</span>
+        <span class="notif-badge" id="notif-badge">0</span>
+      </button>
+      <button class="tb-btn" onclick="openShareModal()"><i class="fas fa-share-alt"></i> <span>Export</span></button>
+      <select id="sort-sel" onchange="renderTasks()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;outline:none;">
+        <option value="default">Sort: Default</option>
+        <option value="priority">Sort: Priority</option>
+        <option value="status">Sort: Status</option>
+        <option value="source">Sort: Source</option>
+        <option value="title">Sort: Title A–Z</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" id="vg" onclick="setView('grid')" title="Grid"><i class="fas fa-th-large"></i></button>
+        <button class="view-btn" id="vl" onclick="setView('list')" title="List"><i class="fas fa-list"></i></button>
+      </div>
+    </div>
+    <div class="tasks-area">
+      <div class="tasks-grid" id="task-container"></div>
+    </div>
+  </div>
+
+  <!-- AI PANEL -->
+  <div class="ai-panel">
+    <div class="panel-hdr">
+      <div class="panel-ai-row">
+        <div class="panel-avatar">AI</div>
+        <div>
+          <div class="panel-name">EvronAI</div>
+          <div class="panel-sub">Powered by DeepSeek</div>
+        </div>
+        <div style="margin-left:auto">
+          <div class="api-pill">
+            <div class="api-dot" id="api-dot"></div>
+            <span id="api-txt">Not configured</span>
+          </div>
+        </div>
+      </div>
+      <div class="stats-strip">
+        <div class="stat-cell"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">Tasks</div></div>
+        <div class="stat-cell"><div class="stat-num" id="s-high">0</div><div class="stat-lbl">High Pri</div></div>
+        <div class="stat-cell"><div class="stat-num" id="s-done">0</div><div class="stat-lbl">Done</div></div>
+      </div>
+    </div>
+    <div class="chat-body" id="chat">
+      <div class="msg ai">
+        <div class="msg-who">🤖 EVRONAI</div>
+        <div class="bubble">
+          Hello! I'm your AI project intelligence assistant.<br><br>
+          I can help you:<br>
+          • <strong>Add tasks</strong> — "Add task: Fix login bug, high priority"<br>
+          • <strong>Analyze</strong> — identify risks & bottlenecks<br>
+          • <strong>Prioritize</strong> — what to work on first<br>
+          • <strong>Report</strong> — project summaries<br>
+          • <strong>Delete</strong> — "delete all done tasks"<br><br>
+          Configure your DeepSeek API key in <strong>Connect Sources</strong> for full AI.
+        </div>
+      </div>
+    </div>
+    <div class="quick-bar">
+      <button class="qp" onclick="qp('Analyze all tasks and identify the biggest risks')">🔍 Analyze</button>
+      <button class="qp" onclick="qp('What should I prioritize right now?')">🎯 Prioritize</button>
+      <button class="qp" onclick="qp('Find bottlenecks in my current tasks')">⚠️ Bottlenecks</button>
+      <button class="qp" onclick="qp('Generate a full project status report')">📋 Report</button>
+      <button class="qp" onclick="qp('Which tasks are overdue or at risk?')">🚨 At Risk</button>
+    </div>
+    <div class="chat-input-row">
+      <textarea class="chat-ta" id="chat-in" rows="1"
+        placeholder="Ask EvronAI anything about your tasks…"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+        oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ADD TASK OVERLAY -->
+<div class="overlay" id="add-overlay" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Add New Task</div>
+      <button class="close-btn" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input class="form-input" id="t-title" placeholder="What needs to be done?">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="t-desc" placeholder="Additional details…"></textarea>
+    </div>
+    <div class="form-row">
+      <div>
+        <label class="form-label">Source</label>
+        <select class="form-select" id="t-src">
+          <option value="trello">Trello</option>
+          <option value="jira">Jira</option>
+          <option value="gmail">Gmail</option>
+          <option value="slack">Slack</option>
+          <option value="monday">Monday.com</option>
+          <option value="asana">Asana</option>
+          <option value="ai">AI</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Priority</label>
+        <select class="form-select" id="t-pri">
+          <option value="high">High</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label class="form-label">Status</label>
+        <select class="form-select" id="t-status">
+          <option value="todo">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Board / Project</label>
+        <input class="form-input" id="t-board" placeholder="e.g. Backend, Design">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Due Date (optional)</label>
+      <input type="date" class="form-input" id="t-due">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-save" onclick="saveNewTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE / EXPORT MODAL -->
+<div class="overlay" id="share-overlay" onclick="if(event.target===this)closeShareModal()">
+  <div class="modal" style="width:500px">
+    <div class="modal-hdr">
+      <div class="modal-title">Export & Share</div>
+      <button class="close-btn" onclick="closeShareModal()">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <button class="btn-save" onclick="exportTasks()" style="padding:14px">
+        <i class="fas fa-download"></i> Export Tasks (JSON)
+      </button>
+      <button class="btn-save" onclick="exportTasks('csv')" style="padding:14px;background:linear-gradient(135deg,#0e7490,#0891b2)">
+        <i class="fas fa-table"></i> Export Tasks (CSV)
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Import Tasks (paste JSON or drag file)</label>
+      <textarea class="form-textarea" id="import-json" rows="6" placeholder='Paste exported JSON here…'></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label class="btn-save" style="cursor:pointer;text-align:center;padding:11px">
+        <i class="fas fa-upload"></i> Import from file
+        <input type="file" accept=".json,.csv" style="display:none" onchange="importFromFile(this)">
+      </label>
+      <button class="btn-save" onclick="importTasks()"><i class="fas fa-check"></i> Import JSON</button>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--text)">Team sharing:</strong> Export your tasks as JSON and share the file with teammates. They can import it to get the same task view. Config (API keys) is never exported.
+    </div>
+  </div>
+</div>
+
+<!-- CONFIG OVERLAY -->
+<div class="overlay" id="cfg-overlay" onclick="if(event.target===this)closeConfig()">
+  <div class="modal" style="width:600px">
+    <div class="modal-hdr">
+      <div class="modal-title">Connect Your Tools</div>
+      <button class="close-btn" onclick="closeConfig()">✕</button>
+    </div>
+
+    <div class="cfg-tabs" id="cfg-tabs">
+      <div class="cfg-tab active" onclick="switchCfgTab(this,'ds')"><i class="fas fa-brain"></i> DeepSeek AI</div>
+      <div class="cfg-tab" onclick="switchCfgTab(this,'trello')"><i class="fab fa-trello"></i> Trello</div>
+      <div class="cfg-tab" onclick="switchCfgTab(this,'jira')"><i class="fab fa-jira"></i> Jira</div>
+      <div class="cfg-tab" onclick="switchCfgTab(this,'gmail')"><i class="fab fa-google"></i> Gmail</div>
+      <div class="cfg-tab" onclick="switchCfgTab(this,'slack')"><i class="fab fa-slack"></i> Slack</div>
+      <div class="cfg-tab" onclick="switchCfgTab(this,'monday')"><i class="fas fa-calendar-alt"></i> Monday</div>
+      <div class="cfg-tab" onclick="switchCfgTab(this,'asana')"><i class="fab fa-asana"></i> Asana</div>
+    </div>
+
+    <!-- DeepSeek -->
+    <div class="cfg-tab-pane active" id="pane-ds">
+      <div class="info-box">
+        <h4><i class="fas fa-brain"></i> DeepSeek API</h4>
+        <p>Get your API key at <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> → API Keys → Create new key.</p>
+        <p>The key powers all AI chat, task analysis, and recommendations.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">API Key</label>
+        <input type="password" class="form-input" id="ds-key" placeholder="sk-…">
+      </div>
+      <div id="ds-status" class="conn-status"></div>
+    </div>
+
+    <!-- Trello -->
+    <div class="cfg-tab-pane" id="pane-trello">
+      <div class="info-box">
+        <h4><i class="fab fa-trello"></i> Trello API</h4>
+        <p>Get credentials at <a href="https://trello.com/power-ups/admin" target="_blank">Trello Power-Ups Admin</a></p>
+        <ol>
+          <li>Create a Power-Up → get the API Key</li>
+          <li>Click "Token" link to generate your token</li>
+          <li>Paste both below and click Test Connection</li>
+        </ol>
+      </div>
+      <div class="form-group"><label class="form-label">API Key</label><input class="form-input" id="tr-key" placeholder="32-char key"></div>
+      <div class="form-group"><label class="form-label">Token</label><input class="form-input" id="tr-tok" placeholder="Token (64 chars)"></div>
+      <div class="form-group"><label class="form-label">Boards to sync (optional — comma separated names, leave empty for ALL)</label><input class="form-input" id="tr-boards" placeholder="e.g. My Project, Design Backlog"></div>
+      <button class="tb-btn" style="margin-bottom:8px" onclick="testTrello()"><i class="fas fa-plug"></i> Test Connection</button>
+      <div id="tr-status" class="conn-status"></div>
+    </div>
+
+    <!-- Jira -->
+    <div class="cfg-tab-pane" id="pane-jira">
+      <div class="info-box">
+        <h4><i class="fab fa-jira"></i> Jira API</h4>
+        <ol>
+          <li>Log in → Account Settings → Security → <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank">API Tokens</a></li>
+          <li>Create token, copy it</li>
+          <li>Your domain: <code>yourcompany.atlassian.net</code></li>
+        </ol>
+      </div>
+      <div class="form-group"><label class="form-label">Domain</label><input class="form-input" id="ji-domain" placeholder="company.atlassian.net"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ji-email" placeholder="you@company.com"></div>
+      <div class="form-group"><label class="form-label">API Token</label><input type="password" class="form-input" id="ji-tok" placeholder="Your Jira API token"></div>
+      <button class="tb-btn" style="margin-bottom:8px" onclick="testJira()"><i class="fas fa-plug"></i> Test Connection</button>
+      <div id="ji-status" class="conn-status"></div>
+    </div>
+
+    <!-- Gmail -->
+    <div class="cfg-tab-pane" id="pane-gmail">
+      <div class="info-box">
+        <h4><i class="fab fa-google"></i> Gmail — OAuth 2.0 (PKCE)</h4>
+        <p>EvronAI uses Google's secure OAuth 2.0 PKCE flow — no backend server needed. Your credentials stay in your browser.</p>
+        <ol>
+          <li>You need a Google Cloud project with the Gmail API enabled</li>
+          <li>Create OAuth 2.0 credentials → Web application</li>
+          <li>Add <code id="gm-redirect-uri"></code> as an Authorised redirect URI</li>
+          <li>Paste your Client ID below and click Connect Gmail</li>
+        </ol>
+        <p style="margin-top:6px">Scopes requested: <code>gmail.readonly</code> — read-only access to fetch subjects and senders only.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-id-card"></i> Google OAuth Client ID</label>
+        <input class="form-input" id="gm-client-id" placeholder="xxxxxxxx.apps.googleusercontent.com">
+      </div>
+      <div id="gm-oauth-status" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-save" style="flex:1;padding:11px" onclick="startGmailOAuth()">
+          <i class="fab fa-google"></i> Connect Gmail
+        </button>
+        <button class="btn-cancel" onclick="revokeGmail()" id="gm-revoke-btn" style="display:none">
+          <i class="fas fa-times"></i> Disconnect
+        </button>
+      </div>
+      <div id="gm-status" class="conn-status" style="margin-top:10px"></div>
+    </div>
+
+    <!-- Slack -->
+    <div class="cfg-tab-pane" id="pane-slack">
+      <div class="info-box">
+        <h4><i class="fab fa-slack"></i> Slack API</h4>
+        <ol>
+          <li>Go to <a href="https://api.slack.com/apps" target="_blank">api.slack.com/apps</a> → Create App</li>
+          <li>Add scopes: <code>channels:read</code>, <code>channels:history</code>, <code>users:read</code></li>
+          <li>Install to workspace → copy Bot User OAuth Token (<code>xoxb-…</code>)</li>
+        </ol>
+      </div>
+      <div class="form-group"><label class="form-label">Bot Token</label><input class="form-input" id="sl-tok" placeholder="xoxb-…"></div>
+      <div class="form-group"><label class="form-label">Channels (comma-separated)</label><input class="form-input" id="sl-ch" placeholder="general, project-alpha"></div>
+      <button class="tb-btn" style="margin-bottom:8px" onclick="testSlack()"><i class="fas fa-plug"></i> Test Connection</button>
+      <div id="sl-status" class="conn-status"></div>
+    </div>
+
+    <!-- Monday -->
+    <div class="cfg-tab-pane" id="pane-monday">
+      <div class="info-box">
+        <h4><i class="fas fa-calendar-alt"></i> Monday.com API</h4>
+        <ol>
+          <li>Log in → Avatar → Admin → API</li>
+          <li>Copy your personal API token</li>
+          <li>Optional: get a Board ID from your board URL</li>
+        </ol>
+      </div>
+      <div class="form-group"><label class="form-label">API Token</label><input class="form-input" id="mo-tok" placeholder="Your Monday API token"></div>
+      <div class="form-group"><label class="form-label">Board ID (optional)</label><input class="form-input" id="mo-board" placeholder="Leave empty for all boards"></div>
+      <button class="tb-btn" style="margin-bottom:8px" onclick="testMonday()"><i class="fas fa-plug"></i> Test Connection</button>
+      <div id="mo-status" class="conn-status"></div>
+    </div>
+
+    <!-- Asana -->
+    <div class="cfg-tab-pane" id="pane-asana">
+      <div class="info-box">
+        <h4><i class="fab fa-asana"></i> Asana API</h4>
+        <ol>
+          <li>Go to <a href="https://app.asana.com/0/developer-console" target="_blank">Asana Developer Console</a></li>
+          <li>Create a Personal Access Token</li>
+          <li>Find your Workspace GID in workspace settings</li>
+        </ol>
+      </div>
+      <div class="form-group"><label class="form-label">Personal Access Token</label><input class="form-input" id="as-tok" placeholder="1/…"></div>
+      <div class="form-group"><label class="form-label">Workspace GID (optional)</label><input class="form-input" id="as-ws" placeholder="Leave empty to auto-detect"></div>
+      <button class="tb-btn" style="margin-bottom:8px" onclick="testAsana()"><i class="fas fa-plug"></i> Test Connection</button>
+      <div id="as-status" class="conn-status"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeConfig()">Cancel</button>
+      <button class="btn-save" onclick="saveConfig()">Save Configuration</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  SECURE STORAGE — AES-GCM encryption for API keys
+// ═══════════════════════════════════════════════
+const STORE_KEY = 'evron-cfg-v2';
+const TASKS_KEY = 'evron-tasks-v2';
+
+async function getSessionKey() {
+  // Derive a key from session + origin so keys are tied to this browser session
+  const raw = `${navigator.userAgent}|${location.origin}|evronai-2026`;
+  const enc  = new TextEncoder().encode(raw);
+  const hash = await crypto.subtle.digest('SHA-256', enc);
+  return crypto.subtle.importKey('raw', hash, { name:'AES-GCM' }, false, ['encrypt','decrypt']);
+}
+
+async function encryptCfg(obj) {
+  try {
+    const key  = await getSessionKey();
+    const iv   = crypto.getRandomValues(new Uint8Array(12));
+    const data = new TextEncoder().encode(JSON.stringify(obj));
+    const ct   = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, data);
+    return JSON.stringify({ iv: Array.from(iv), ct: Array.from(new Uint8Array(ct)) });
+  } catch { return JSON.stringify(obj); } // fallback: store plain if SubtleCrypto unavailable
+}
+
+async function decryptCfg(stored) {
+  try {
+    const { iv, ct } = JSON.parse(stored);
+    const key  = await getSessionKey();
+    const dec  = await crypto.subtle.decrypt({ name:'AES-GCM', iv: new Uint8Array(iv) }, key, new Uint8Array(ct));
+    return JSON.parse(new TextDecoder().decode(dec));
+  } catch {
+    // Legacy plain JSON or decryption failure — return parsed or empty
+    try { return JSON.parse(stored); } catch { return {}; }
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let cfg  = {};
+let tasks = [];
+let filter   = 'all';
+let viewMode = 'grid';
+let chatHistory = [];   // recent turns (sliding window)
+let historySummary = ''; // compressed summary of older turns
+let aiThinking  = false;
+let autoRefreshTimer = null;
+let autoRefreshEnabled = false;
+let notificationsEnabled = false;
+let seenTaskIds = new Set(); // for new-task notifications
+
+// Due dates: overdue detection
+function isOverdue(dueDate) {
+  if (!dueDate) return false;
+  return new Date(dueDate) < new Date() && true;
+}
+
+function daysUntilDue(dueDate) {
+  if (!dueDate) return null;
+  const diff = Math.ceil((new Date(dueDate) - new Date()) / 86400000);
+  return diff;
+}
+
+// ═══════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════
+function toggleTheme() {
+  const light = document.body.classList.toggle('light');
+  document.querySelector('#theme-btn i').className = light ? 'fas fa-sun' : 'fas fa-moon';
+  localStorage.setItem('evron-theme', light ? 'light' : 'dark');
+}
+(function initTheme() {
+  if (localStorage.getItem('evron-theme') === 'light') {
+    document.body.classList.add('light');
+    document.querySelector('#theme-btn i').className = 'fas fa-sun';
+  }
+})();
+
+// ═══════════════════════════════════════════════
+//  CONFIG MODAL
+// ═══════════════════════════════════════════════
+function openConfig() {
+  const f = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  f('ds-key',    cfg.dsKey);
+  f('tr-key',    cfg.trKey);   f('tr-tok',   cfg.trTok);   f('tr-boards', cfg.trBoards);
+  f('ji-domain', cfg.jiDomain); f('ji-email', cfg.jiEmail); f('ji-tok', cfg.jiTok);
+  f('gm-client-id', cfg.gmClientId);
+  f('sl-tok',    cfg.slTok);    f('sl-ch',    cfg.slCh);
+  f('mo-tok',    cfg.moTok);    f('mo-board', cfg.moBoard);
+  f('as-tok',    cfg.asTok);    f('as-ws',    cfg.asWs);
+  // Show current redirect URI for Gmail setup
+  const ru = document.getElementById('gm-redirect-uri');
+  if (ru) ru.textContent = location.origin + location.pathname;
+  // Show Gmail connection status
+  updateGmailStatus();
+  document.getElementById('cfg-overlay').classList.add('open');
+}
+function closeConfig() { document.getElementById('cfg-overlay').classList.remove('open'); }
+
+function switchCfgTab(el, pane) {
+  document.querySelectorAll('.cfg-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.cfg-tab-pane').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pane-' + pane).classList.add('active');
+}
+
+async function saveConfig() {
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const newCfg = {
+    dsKey:      g('ds-key'),
+    trKey:      g('tr-key'),    trTok:    g('tr-tok'),   trBoards: g('tr-boards'),
+    jiDomain:   g('ji-domain'), jiEmail:  g('ji-email'), jiTok:    g('ji-tok'),
+    gmClientId: g('gm-client-id'),
+    // Preserve OAuth tokens — don't overwrite from form (they come from OAuth flow)
+    gmAccessToken:  cfg.gmAccessToken  || null,
+    gmRefreshToken: cfg.gmRefreshToken || null,
+    gmTokenExpiry:  cfg.gmTokenExpiry  || null,
+    gmEmail:        cfg.gmEmail        || null,
+    slTok:    g('sl-tok'),    slCh:     g('sl-ch'),
+    moTok:    g('mo-tok'),    moBoard:  g('mo-board'),
+    asTok:    g('as-tok'),    asWs:     g('as-ws'),
+  };
+  cfg = newCfg;
+  const encrypted = await encryptCfg(newCfg);
+  localStorage.setItem(STORE_KEY, encrypted);
+  closeConfig();
+  updateAPIStatus();
+  toast('✅ Configuration saved (encrypted)', 'ok');
+}
+
+function updateAPIStatus() {
+  const on = !!(cfg.dsKey);
+  document.getElementById('api-dot').className    = 'api-dot' + (on ? ' on' : '');
+  document.getElementById('api-txt').textContent  = on ? 'DeepSeek: Connected' : 'Not configured';
+  document.getElementById('sb-dot').className     = 'pulse-dot' + (on ? '' : ' offline');
+  document.getElementById('sb-status').textContent = on ? 'DeepSeek: Active' : 'DeepSeek: Not configured';
+}
+
+// ═══════════════════════════════════════════════
+//  CONNECTION TESTS
+// ═══════════════════════════════════════════════
+function showConnStatus(el, ok, msg) {
+  el.className = 'conn-status ' + (ok ? 'ok' : 'fail');
+  el.textContent = msg;
+}
+
+async function withAuthError(fn, el) {
+  try {
+    await fn();
+  } catch(e) {
+    const msg = e.message.includes('401') || e.message.includes('403')
+      ? '❌ Authentication failed — check your credentials'
+      : e.message.includes('Failed to fetch') || e.message.includes('NetworkError')
+      ? '❌ Network error — check your internet connection and domain'
+      : '❌ ' + e.message;
+    showConnStatus(el, false, msg);
+  }
+}
+
+async function testGmail() {
+  const email = document.getElementById('gm-email').value.trim();
+  const pass  = document.getElementById('gm-pass').value.trim().replace(/\s/g, '');
+  const el    = document.getElementById('gm-status');
+  if (!email || !pass) { showConnStatus(el, false, 'Enter your Gmail address and App Password'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showConnStatus(el, false, 'Enter a valid email address'); return; }
+  if (pass.length !== 16) { showConnStatus(el, false, `App Password must be exactly 16 characters (got ${pass.length})`); return; }
+  showConnStatus(el, true, `✅ Credentials validated for ${email} — will sync on next Sync All`);
+}
+
+async function testTrello() {
+  const key = document.getElementById('tr-key').value.trim();
+  const tok = document.getElementById('tr-tok').value.trim();
+  const el  = document.getElementById('tr-status');
+  if (!key || !tok) { showConnStatus(el, false, 'Enter both API key and token'); return; }
+  await withAuthError(async () => {
+    const [memberResp, boardsResp] = await Promise.all([
+      fetch(`https://api.trello.com/1/members/me?key=${key}&token=${tok}&fields=fullName,username`),
+      fetch(`https://api.trello.com/1/members/me/boards?key=${key}&token=${tok}&fields=id,name&filter=open`)
+    ]);
+    if (memberResp.status === 401) throw new Error('401');
+    if (!memberResp.ok) throw new Error(`HTTP ${memberResp.status}`);
+    const member = await memberResp.json();
+    const boards = boardsResp.ok ? await boardsResp.json() : [];
+    showConnStatus(el, true, `✅ Connected as ${member.fullName} (@${member.username}) · ${boards.length} open board${boards.length !== 1 ? 's' : ''}: ${boards.slice(0,4).map(b=>b.name).join(', ')}${boards.length > 4 ? '…' : ''}`);
+  }, el);
+}
+
+async function testJira() {
+  const domain = document.getElementById('ji-domain').value.trim().replace(/^https?:\/\//, '');
+  const email  = document.getElementById('ji-email').value.trim();
+  const tok    = document.getElementById('ji-tok').value.trim();
+  const el     = document.getElementById('ji-status');
+  if (!domain || !email || !tok) { showConnStatus(el, false, 'Fill all three fields'); return; }
+  await withAuthError(async () => {
+    const auth = btoa(`${email}:${tok}`);
+    const r = await fetch(`https://${domain}/rest/api/3/myself`, {
+      headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
+    });
+    if (r.status === 401 || r.status === 403) throw new Error('401');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    showConnStatus(el, true, `✅ Connected as ${d.displayName} @ ${domain}`);
+  }, el);
+}
+
+async function testSlack() {
+  const tok = document.getElementById('sl-tok').value.trim();
+  const el  = document.getElementById('sl-status');
+  if (!tok) { showConnStatus(el, false, 'Enter Slack bot token (starts with xoxb-)'); return; }
+  if (!tok.startsWith('xoxb-')) { showConnStatus(el, false, 'Token should start with xoxb-'); return; }
+  await withAuthError(async () => {
+    const r = await fetch('https://slack.com/api/auth.test', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${tok}`, 'Content-Type': 'application/json' }
+    });
+    const d = await r.json();
+    if (d.ok) showConnStatus(el, true, `✅ Connected to "${d.team}" as @${d.user}`);
+    else throw new Error(d.error);
+  }, el);
+}
+
+async function testMonday() {
+  const tok = document.getElementById('mo-tok').value.trim();
+  const el  = document.getElementById('mo-status');
+  if (!tok) { showConnStatus(el, false, 'Enter Monday.com API token'); return; }
+  await withAuthError(async () => {
+    const r = await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: { 'Authorization': tok, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{ me { name email } }' })
+    });
+    const d = await r.json();
+    if (d.data?.me) showConnStatus(el, true, `✅ Connected as ${d.data.me.name} (${d.data.me.email})`);
+    else throw new Error(d.errors?.[0]?.message || 'Invalid token');
+  }, el);
+}
+
+async function testAsana() {
+  const tok = document.getElementById('as-tok').value.trim();
+  const el  = document.getElementById('as-status');
+  if (!tok) { showConnStatus(el, false, 'Enter Asana Personal Access Token'); return; }
+  await withAuthError(async () => {
+    const r = await fetch('https://app.asana.com/api/1.0/users/me', {
+      headers: { 'Authorization': `Bearer ${tok}` }
+    });
+    if (r.status === 401) throw new Error('401');
+    const d = await r.json();
+    if (d.data) showConnStatus(el, true, `✅ Connected as ${d.data.name} (${d.data.email})`);
+    else throw new Error('Invalid token');
+  }, el);
+}
+
+// ═══════════════════════════════════════════════
+//  SYNC — REAL API CALLS WITH PAGINATION + RETRY
+// ═══════════════════════════════════════════════
+async function fetchWithRetry(url, opts = {}, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const r = await fetch(url, opts);
+      if (r.status === 429 && i < retries) {
+        await new Promise(res => setTimeout(res, 1000 * (i + 1)));
+        continue;
+      }
+      return r;
+    } catch(e) {
+      if (i === retries) throw e;
+      await new Promise(res => setTimeout(res, 500));
+    }
+  }
+}
+
+async function syncAll() {
+  const btn  = document.getElementById('sync-btn');
+  const icon = document.getElementById('sync-icon');
+  btn.disabled = true;
+  icon.className = 'fas fa-sync-alt spin';
+  toast('🔄 Syncing all sources…', 'info');
+
+  const newTasks = [];
+  let fetched = 0;
+  const errors = [];
+
+  // TRELLO
+  if (cfg.trKey && cfg.trTok) {
+    try {
+      // Fetch ALL boards (no slice cap) — filter=all includes starred/closed boards too
+      // We use 'open' for active boards only but include starred boards
+      const r = await fetchWithRetry(
+        `https://api.trello.com/1/members/me/boards?key=${cfg.trKey}&token=${cfg.trTok}&fields=id,name,closed,starred,prefs&filter=open`
+      );
+      if (!r.ok) throw new Error(r.status === 401 ? 'Invalid Trello credentials' : `HTTP ${r.status}`);
+      const allBoards = await r.json();
+
+      // If user specified board names/IDs, filter to those — otherwise sync all open boards
+      const wantedBoards = cfg.trBoards
+        ? cfg.trBoards.split(',').map(s => s.trim().toLowerCase())
+        : null;
+
+      const boards = wantedBoards
+        ? allBoards.filter(b => wantedBoards.includes(b.name.toLowerCase()) || wantedBoards.includes(b.id))
+        : allBoards;
+
+      // Update sidebar board count
+      const boardCountEl = document.getElementById('tr-board-count');
+      if (boardCountEl) boardCountEl.textContent = `${boards.length} board${boards.length !== 1 ? 's' : ''}`;
+
+      // Track seen card IDs in this sync to prevent cross-board duplicates
+      const seenCardIds = new Set(tasks.filter(t => t.source === 'trello').map(t => t.id));
+
+      for (const board of boards) {
+        // Fetch lists for this board to map list → status
+        const [cardsResp, listsResp] = await Promise.all([
+          fetchWithRetry(`https://api.trello.com/1/boards/${board.id}/cards/open?key=${cfg.trKey}&token=${cfg.trTok}&fields=id,name,desc,due,labels,idList&limit=1000`),
+          fetchWithRetry(`https://api.trello.com/1/boards/${board.id}/lists?key=${cfg.trKey}&token=${cfg.trTok}&fields=id,name&filter=open`)
+        ]);
+        if (!cardsResp.ok) continue;
+
+        const cards = await cardsResp.json();
+        const lists = listsResp.ok ? await listsResp.json() : [];
+
+        // Map list names to statuses
+        const listStatusMap = {};
+        lists.forEach(l => {
+          const name = l.name.toLowerCase();
+          if (name.includes('done') || name.includes('complete') || name.includes('finished') || name.includes('archived')) {
+            listStatusMap[l.id] = 'done';
+          } else if (name.includes('progress') || name.includes('doing') || name.includes('active') || name.includes('review') || name.includes('wip')) {
+            listStatusMap[l.id] = 'in_progress';
+          } else {
+            listStatusMap[l.id] = 'todo';
+          }
+        });
+
+        (cards || []).forEach(c => {
+          const cardKey = 'tr-' + c.id;
+          if (seenCardIds.has(cardKey)) return;
+          seenCardIds.add(cardKey);
+
+          let pri = 'medium';
+          if (c.labels?.some(l => ['red','orange'].includes(l.color) || /high|urgent|critical/i.test(l.name || ''))) pri = 'high';
+          if (c.labels?.some(l => ['green','sky','lime'].includes(l.color) || /low|minor/i.test(l.name || ''))) pri = 'low';
+          if (c.labels?.some(l => l.color === 'yellow' || /medium|normal/i.test(l.name || ''))) pri = 'medium';
+
+          const status = listStatusMap[c.idList] || 'todo';
+
+          newTasks.push({
+            id: cardKey, source: 'trello',
+            title: c.name,
+            description: c.desc || '',
+            priority: pri,
+            status,
+            board: board.name,
+            due: c.due ? c.due.split('T')[0] : null
+          });
+          fetched++;
+        });
+      }
+
+      toast(`🟦 Trello: ${boards.length} board${boards.length !== 1 ? 's' : ''} synced`, 'ok');
+    } catch(e) { errors.push('Trello: ' + e.message); }
+  }
+
+  // JIRA
+  if (cfg.jiDomain && cfg.jiEmail && cfg.jiTok) {
+    try {
+      const domain = cfg.jiDomain.replace(/^https?:\/\//, '');
+      const auth   = btoa(`${cfg.jiEmail}:${cfg.jiTok}`);
+      let startAt  = 0; const maxResults = 25; let total = Infinity;
+      while (startAt < Math.min(total, 50)) {
+        const r = await fetchWithRetry(
+          `https://${domain}/rest/api/3/search?jql=assignee%3DcurrentUser()+ORDER+BY+updated+DESC&maxResults=${maxResults}&startAt=${startAt}&fields=summary,description,priority,status,duedate`,
+          { headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' } }
+        );
+        if (!r.ok) throw new Error(r.status === 401 ? 'Invalid Jira credentials' : `HTTP ${r.status}`);
+        const data = await r.json();
+        total = data.total || 0;
+        if (!data.issues?.length) break;
+        const priMap = { Highest:'high', High:'high', Medium:'medium', Low:'low', Lowest:'low' };
+        const stMap  = { 'To Do':'todo', 'In Progress':'in_progress', 'Done':'done' };
+        data.issues.forEach(i => {
+          if (tasks.some(t => t.id === 'ji-' + i.id)) return;
+          newTasks.push({
+            id: 'ji-'+i.id, source:'jira',
+            title: i.key + ' ' + i.fields.summary,
+            description: i.fields.description?.content?.[0]?.content?.[0]?.text || '',
+            priority: priMap[i.fields.priority?.name] || 'medium',
+            status:   stMap[i.fields.status?.name]    || 'todo',
+            board: domain, due: i.fields.duedate || null
+          });
+          fetched++;
+        });
+        startAt += maxResults;
+        if (data.issues.length < maxResults) break;
+      }
+    } catch(e) { errors.push('Jira: ' + e.message); }
+  }
+
+  // GMAIL — real OAuth if token exists, else skip
+  if (cfg.gmAccessToken) {
+    try {
+      const gmTasks = await syncGmailReal();
+      gmTasks.forEach(t => {
+        if (!tasks.some(x => x.id === t.id)) { newTasks.push(t); fetched++; }
+      });
+      if (gmTasks.length) toast(`📧 Gmail: ${gmTasks.length} new email task${gmTasks.length > 1 ? 's' : ''}`, 'ok');
+    } catch(e) { errors.push('Gmail: ' + e.message); }
+  }
+
+  // SLACK
+  if (cfg.slTok) {
+    try {
+      const r = await fetchWithRetry('https://slack.com/api/conversations.list?types=public_channel,private_channel&limit=10&exclude_archived=true', {
+        headers: { 'Authorization': `Bearer ${cfg.slTok}` }
+      });
+      const convs = await r.json();
+      if (!convs.ok) throw new Error(convs.error);
+      const wantedChannels = cfg.slCh ? cfg.slCh.split(',').map(s => s.trim().replace(/^#/, '')) : null;
+      const channels = (convs.channels || [])
+        .filter(c => !wantedChannels || wantedChannels.includes(c.name))
+        .slice(0, 5);
+      for (const ch of channels) {
+        const hr = await fetchWithRetry(`https://slack.com/api/conversations.history?channel=${ch.id}&limit=10`, {
+          headers: { 'Authorization': `Bearer ${cfg.slTok}` }
+        });
+        const hist = await hr.json();
+        if (!hist.ok) continue;
+        const actionMsgs = (hist.messages || []).filter(m =>
+          m.type === 'message' && !m.subtype &&
+          /\b(TODO|todo|action item|follow.?up|ASAP|urgent|@here|@channel)\b/i.test(m.text || '')
+        );
+        actionMsgs.forEach(m => {
+          const id = 'sl-' + m.ts;
+          if (tasks.some(t => t.id === id)) return;
+          const isUrgent = /urgent|ASAP|@here|@channel/i.test(m.text);
+          newTasks.push({
+            id, source:'slack',
+            title: `#${ch.name}: ${(m.text || '').substring(0, 80)}`,
+            description: m.text || '',
+            priority: isUrgent ? 'high' : 'medium',
+            status: 'todo', board: '#' + ch.name, due: null
+          });
+          fetched++;
+        });
+      }
+    } catch(e) { errors.push('Slack: ' + e.message); }
+  }
+
+  // MONDAY
+  if (cfg.moTok) {
+    try {
+      const boardFilter = cfg.moBoard ? `ids:[${parseInt(cfg.moBoard)}]` : '';
+      const gql = `{ boards(${boardFilter} limit:5 order_by:created_at) { name items_page(limit:20){ items { id name state column_values { id text } } } } }`;
+      const r = await fetchWithRetry('https://api.monday.com/v2', {
+        method: 'POST',
+        headers: { 'Authorization': cfg.moTok, 'Content-Type': 'application/json', 'API-Version': '2024-01' },
+        body: JSON.stringify({ query: gql })
+      });
+      const data = await r.json();
+      if (data.errors) throw new Error(data.errors[0].message);
+      (data.data?.boards || []).forEach(b => {
+        (b.items_page?.items || []).forEach(item => {
+          const id = 'mo-' + item.id;
+          if (tasks.some(t => t.id === id)) return;
+          const dueCol = item.column_values?.find(c => c.id === 'due_date' || c.id === 'date4');
+          const priCol = item.column_values?.find(c => c.id === 'priority' || c.id === 'status');
+          const pri = priCol?.text?.toLowerCase().includes('high') ? 'high'
+                    : priCol?.text?.toLowerCase().includes('low')  ? 'low' : 'medium';
+          newTasks.push({
+            id, source:'monday',
+            title: item.name,
+            description: item.column_values?.map(c => c.text).filter(Boolean).join(' · ') || '',
+            priority: pri,
+            status: item.state === 'done' ? 'done' : item.state === 'active' ? 'in_progress' : 'todo',
+            board: b.name, due: dueCol?.text || null
+          });
+          fetched++;
+        });
+      });
+    } catch(e) { errors.push('Monday: ' + e.message); }
+  }
+
+  // ASANA
+  if (cfg.asTok) {
+    try {
+      let wsGid = cfg.asWs;
+      if (!wsGid) {
+        const mr = await fetchWithRetry('https://app.asana.com/api/1.0/users/me?opt_fields=workspaces', {
+          headers: { 'Authorization': `Bearer ${cfg.asTok}` }
+        });
+        if (!mr.ok) throw new Error('Invalid Asana token');
+        const me = await mr.json();
+        wsGid = me.data?.workspaces?.[0]?.gid;
+      }
+      if (!wsGid) throw new Error('No Asana workspace found');
+      let offset = null; let fetching = true;
+      while (fetching) {
+        const url = `https://app.asana.com/api/1.0/tasks?workspace=${wsGid}&assignee=me&opt_fields=name,completed,due_on,notes,memberships.project.name&limit=25${offset ? '&offset='+offset : ''}`;
+        const r = await fetchWithRetry(url, { headers: { 'Authorization': `Bearer ${cfg.asTok}` } });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const d = await r.json();
+        (d.data || []).forEach(t => {
+          const id = 'as-' + t.gid;
+          if (tasks.some(tk => tk.id === id)) return;
+          const projectName = t.memberships?.[0]?.project?.name || 'Asana';
+          newTasks.push({ id, source:'asana', title:t.name, description:t.notes||'', priority:'medium', status: t.completed ? 'done' : 'todo', board: projectName, due: t.due_on || null });
+          fetched++;
+        });
+        offset = d.next_page?.offset;
+        fetching = !!(offset && d.data?.length === 25 && fetched < 100);
+      }
+    } catch(e) { errors.push('Asana: ' + e.message); }
+  }
+
+  // Results
+  if (errors.length) errors.forEach(e => toast('⚠️ ' + e, 'err'));
+  if (fetched === 0 && tasks.length === 0) {
+    tasks = getDemoTasks();
+    toast('📋 Demo tasks loaded — configure integrations for real data', 'info');
+  } else {
+    tasks.push(...newTasks);
+    if (fetched > 0) toast(`✅ Synced ${fetched} new task${fetched !== 1 ? 's' : ''}`, 'ok');
+    else if (!errors.length) toast('✅ Up to date — no new tasks', 'info');
+  }
+
+  saveTasks(); updateStats(); renderTasks();
+  btn.disabled = false;
+  icon.className = 'fas fa-sync-alt';
+}
+
+function getDemoTasks() {
+  const today = new Date();
+  const dd = (n) => { const d = new Date(today); d.setDate(d.getDate() + n); return d.toISOString().split('T')[0]; };
+  return [
+    { id:'d1', source:'trello', title:'Design new user onboarding flow', description:'Create wireframes and user journey for new registrations', priority:'high', status:'in_progress', board:'Product Design', due: dd(3) },
+    { id:'d2', source:'jira',   title:'[AUTH-123] Implement OAuth2 authentication', description:'Add Google and GitHub OAuth providers to the auth service', priority:'high', status:'todo', board:'Backend', due: dd(-1) },
+    { id:'d3', source:'gmail',  title:'Client: Q4 project timeline review', description:'Please review the attached timeline and provide feedback by Friday', priority:'high', status:'todo', board:'Client Communications', due: dd(2) },
+    { id:'d4', source:'slack',  title:'#dev: Production deployment discussion', description:'Team discussing v2.3 deployment strategy and rollback plan', priority:'medium', status:'in_progress', board:'Development', due: null },
+    { id:'d5', source:'monday', title:'Q4 Marketing Campaign Launch', description:'Coordinate social, email, and paid channels for October launch', priority:'medium', status:'todo', board:'Marketing', due: dd(14) },
+    { id:'d6', source:'asana',  title:'API documentation update', description:'Update all endpoint docs to reflect v3 changes', priority:'low', status:'done', board:'Docs', due: dd(-5) },
+    { id:'d7', source:'trello', title:'Fix payment gateway timeout errors', description:'Customers reporting intermittent failures at checkout', priority:'high', status:'in_progress', board:'Support', due: dd(1) },
+    { id:'d8', source:'jira',   title:'[PERF-88] Database query optimisation', description:'N+1 query problem identified in user dashboard endpoint', priority:'medium', status:'todo', board:'Backend', due: dd(7) },
+  ];
+}
+
+// ═══════════════════════════════════════════════
+//  TASKS CRUD
+// ═══════════════════════════════════════════════
+function openAddModal() {
+  document.getElementById('t-due').value = '';
+  document.getElementById('add-overlay').classList.add('open');
+}
+function closeAddModal() { document.getElementById('add-overlay').classList.remove('open'); }
+
+function saveNewTask() {
+  const title = document.getElementById('t-title').value.trim();
+  if (!title) { toast('Please enter a task title', 'err'); return; }
+  tasks.push({
+    id: 'manual-' + Date.now(),
+    source:   document.getElementById('t-src').value,
+    title,
+    description: document.getElementById('t-desc').value.trim() || '',
+    priority: document.getElementById('t-pri').value,
+    status:   document.getElementById('t-status').value,
+    board:    document.getElementById('t-board').value.trim() || 'General',
+    due:      document.getElementById('t-due').value || null,
+  });
+  ['t-title','t-desc','t-board','t-due'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  closeAddModal(); saveTasks(); updateStats(); renderTasks();
+  toast('✅ Task added', 'ok');
+}
+
+function deleteTask(id) {
+  if (!confirm('Delete this task?')) return;
+  tasks = tasks.filter(t => t.id !== id);
+  saveTasks(); updateStats(); renderTasks();
+  toast('🗑️ Task deleted', 'ok');
+}
+
+function cycleStatus(id) {
+  const t = tasks.find(t => t.id === id); if (!t) return;
+  const cycle = ['todo','in_progress','done'];
+  t.status = cycle[(cycle.indexOf(t.status) + 1) % cycle.length];
+  saveTasks(); updateStats(); renderTasks();
+  toast(`↻ ${t.status.replace('_',' ')}`, 'info');
+}
+
+function startEdit(id) {
+  const t  = tasks.find(t => t.id === id); if (!t) return;
+  const el = document.querySelector(`.task-card[data-id="${CSS.escape(id)}"] .card-title, .task-row[data-id="${CSS.escape(id)}"] .card-title`);
+  if (!el || el.contentEditable === 'true') return;
+  el.contentEditable = 'true';
+  el.classList.add('editing');
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(range);
+
+  const finish = () => {
+    const newTitle = el.textContent.trim();
+    if (newTitle && newTitle !== t.title) {
+      t.title = newTitle;
+      saveTasks(); toast('✏️ Updated', 'ok');
+    }
+    el.contentEditable = 'false';
+    el.classList.remove('editing');
+    el.removeEventListener('blur', finish);
+    el.removeEventListener('keydown', onKey);
+  };
+  const onKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } if (e.key === 'Escape') { el.textContent = t.title; el.blur(); } };
+  el.addEventListener('blur', finish);
+  el.addEventListener('keydown', onKey);
+}
+
+// ═══════════════════════════════════════════════
+//  FILTER, SORT & RENDER
+// ═══════════════════════════════════════════════
+function setFilter(el, src) {
+  document.querySelectorAll('.src-row').forEach(r => r.classList.remove('active'));
+  el.classList.add('active');
+  filter = src;
+  renderTasks();
+}
+
+function setView(v) {
+  viewMode = v;
+  document.getElementById('vg').classList.toggle('active', v === 'grid');
+  document.getElementById('vl').classList.toggle('active', v === 'list');
+  document.getElementById('task-container').className = v === 'grid' ? 'tasks-grid' : 'tasks-list';
+  renderTasks();
+}
+
+const PRI_ORDER = { high:0, medium:1, low:2 };
+const ST_ORDER  = { todo:0, in_progress:1, done:2 };
+
+function renderTasks() {
+  const q    = document.getElementById('q').value.toLowerCase();
+  const sort = document.getElementById('sort-sel')?.value || 'default';
+
+  let vis = tasks.filter(t => {
+    if (filter !== 'all' && t.source !== filter) return false;
+    if (!q) return true;
+    return t.title.toLowerCase().includes(q) ||
+           (t.description||'').toLowerCase().includes(q) ||
+           (t.board||'').toLowerCase().includes(q);
+  });
+
+  if (sort === 'priority') vis = [...vis].sort((a,b) => (PRI_ORDER[a.priority]??1) - (PRI_ORDER[b.priority]??1));
+  else if (sort === 'status') vis = [...vis].sort((a,b) => (ST_ORDER[a.status]??0) - (ST_ORDER[b.status]??0));
+  else if (sort === 'source') vis = [...vis].sort((a,b) => a.source.localeCompare(b.source));
+  else if (sort === 'title')  vis = [...vis].sort((a,b) => a.title.localeCompare(b.title));
+  else {
+    // Default: overdue first, then high priority, then rest
+    vis = [...vis].sort((a,b) => {
+      const aOver = a.due && isOverdue(a.due) && a.status !== 'done' ? 0 : 1;
+      const bOver = b.due && isOverdue(b.due) && b.status !== 'done' ? 0 : 1;
+      if (aOver !== bOver) return aOver - bOver;
+      return (PRI_ORDER[a.priority]??1) - (PRI_ORDER[b.priority]??1);
+    });
+  }
+
+  const c = document.getElementById('task-container');
+  if (!vis.length) {
+    c.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No tasks found</div>
+      <div class="empty-sub">${tasks.length ? 'Try a different filter or search' : 'Click Sync or Add Task to get started'}</div>
+    </div>`;
+    return;
+  }
+
+  if (viewMode === 'grid') {
+    c.innerHTML = vis.map(t => cardHTML(t)).join('');
+  } else {
+    c.innerHTML = vis.map(t => rowHTML(t)).join('');
+  }
+}
+
+function dueBadge(due, status) {
+  if (!due || status === 'done') return '';
+  const days = daysUntilDue(due);
+  if (days === null) return '';
+  if (days < 0)  return `<span style="font-size:10px;font-weight:700;color:var(--danger);background:rgba(255,71,87,0.12);padding:2px 6px;border-radius:4px;">⚠️ Overdue ${Math.abs(days)}d</span>`;
+  if (days === 0) return `<span style="font-size:10px;font-weight:700;color:var(--warn);background:rgba(255,165,2,0.12);padding:2px 6px;border-radius:4px;">⏰ Due today</span>`;
+  if (days <= 3)  return `<span style="font-size:10px;font-weight:700;color:var(--warn);background:rgba(255,165,2,0.08);padding:2px 6px;border-radius:4px;">📅 ${days}d left</span>`;
+  return `<span style="font-size:10px;color:var(--muted);padding:2px 6px;">📅 ${due}</span>`;
+}
+
+function safeId(id) { return id.replace(/['"\\]/g, ''); }
+
+function cardHTML(t) {
+  const id  = safeId(t.id);
+  const due = dueBadge(t.due, t.status);
+  return `
+  <div class="task-card" data-id="${esc(t.id)}">
+    <div class="card-actions">
+      <button class="ca-btn" onclick="startEdit('${id}')" title="Edit (click title to edit inline)"><i class="fas fa-pen"></i></button>
+      <button class="ca-btn" onclick="aiAnalyzeTask('${id}')" title="AI Analyze" id="aibtn-${id}"><i class="fas fa-robot"></i></button>
+      <button class="ca-btn danger" onclick="deleteTask('${id}')" title="Delete"><i class="fas fa-trash"></i></button>
+    </div>
+    <span class="src-badge ${t.source}">${srcIcon(t.source)} ${t.source.toUpperCase()}</span>
+    <div class="card-title">${esc(t.title)}</div>
+    <div class="card-meta">
+      <span class="pri-badge ${t.priority}">${t.priority}</span>
+      <span class="status-pill ${t.status}" onclick="cycleStatus('${id}')" title="Click to cycle status">${t.status.replace('_',' ')}</span>
+      ${due}
+    </div>
+    ${t.description ? `<div class="card-desc">${esc(t.description).substring(0,110)}${t.description.length>110?'…':''}</div>` : ''}
+    ${t.board ? `<div class="card-board">📌 ${esc(t.board)}</div>` : ''}
+  </div>`;
+}
+
+function rowHTML(t) {
+  const id  = safeId(t.id);
+  const due = dueBadge(t.due, t.status);
+  return `
+  <div class="task-row" data-id="${esc(t.id)}">
+    <span class="src-badge ${t.source}" style="margin:0;flex-shrink:0">${srcIcon(t.source)}</span>
+    <span class="pri-badge ${t.priority}" style="flex-shrink:0">${t.priority}</span>
+    <div class="card-title" style="flex:1;min-width:0">${esc(t.title)}</div>
+    ${due}
+    <span class="status-pill ${t.status}" onclick="cycleStatus('${id}')">${t.status.replace('_',' ')}</span>
+    ${t.board ? `<span style="font-size:11px;color:var(--muted);flex-shrink:0;white-space:nowrap">📌 ${esc(t.board)}</span>` : ''}
+    <div class="card-actions" style="opacity:1;position:relative;top:auto;right:auto">
+      <button class="ca-btn" onclick="startEdit('${id}')"><i class="fas fa-pen"></i></button>
+      <button class="ca-btn" onclick="aiAnalyzeTask('${id}')" id="aibtn-${id}"><i class="fas fa-robot"></i></button>
+      <button class="ca-btn danger" onclick="deleteTask('${id}')"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>`;
+}
+
+function updateStats() {
+  ['all','trello','jira','gmail','slack','monday','asana','ai'].forEach(s => {
+    const el = document.getElementById('cnt-' + s);
+    if (el) el.textContent = s === 'all' ? tasks.length : tasks.filter(t => t.source === s).length;
+  });
+  document.getElementById('s-total').textContent = tasks.length;
+  document.getElementById('s-high').textContent  = tasks.filter(t => t.priority === 'high' && t.status !== 'done').length;
+  document.getElementById('s-done').textContent  = tasks.filter(t => t.status === 'done').length;
+}
+
+function saveTasks() { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); }
+
+// ═══════════════════════════════════════════════
+//  AI — INTENT DETECTION
+//  Classify the user's message before calling the
+//  model so we can tailor token budget, context
+//  depth, and prompt framing per request type.
+// ═══════════════════════════════════════════════
+const INTENT = {
+  ADD:       'add',
+  DELETE:    'delete',
+  UPDATE:    'update',
+  ANALYZE:   'analyze',
+  PRIORITIZE:'prioritize',
+  REPORT:    'report',
+  RISK:      'risk',
+  GENERAL:   'general',
+};
+
+function detectIntent(text) {
+  const t = text.toLowerCase();
+  // Positive-framing guards prevent "I don't want to add a task" matching ADD
+  const positiveAdd = /\b(add|create|new|make|log|track)\b/.test(t) && !/\bdon'?t\b|\bno\b|\bnot\b/.test(t.split(/add|creat/)[0] || '');
+  if (positiveAdd && /\b(task|todo|item|ticket|card)\b/.test(t)) return INTENT.ADD;
+  if (/\b(delete|remove|clear|clean)\b/.test(t) && /\b(done|completed?|finished?|all)\b/.test(t)) return INTENT.DELETE;
+  if (/\b(update|change|edit|set|mark|move|rename)\b/.test(t)) return INTENT.UPDATE;
+  if (/\b(analy[sz]e|review|assess|examine|look at|check)\b/.test(t) && /\btask|ticket|card|issue\b/.test(t)) return INTENT.ANALYZE;
+  if (/\b(prioriti[sz]|focus|what should|where (do|should) i|most important|first)\b/.test(t)) return INTENT.PRIORITIZE;
+  if (/\b(report|summar|overview|status|dashboard|breakdown)\b/.test(t)) return INTENT.REPORT;
+  if (/\b(risk|block|bottleneck|stuck|delay|overdue|late|danger|concern)\b/.test(t)) return INTENT.RISK;
+  return INTENT.GENERAL;
+}
+
+// Token budgets per intent — avoids over/under-spending
+function tokenBudget(intent) {
+  return {
+    [INTENT.ADD]:        300,
+    [INTENT.DELETE]:     200,
+    [INTENT.UPDATE]:     250,
+    [INTENT.ANALYZE]:    700,
+    [INTENT.PRIORITIZE]: 500,
+    [INTENT.REPORT]:     800,
+    [INTENT.RISK]:       700,
+    [INTENT.GENERAL]:    500,
+  }[intent] || 500;
+}
+
+// ═══════════════════════════════════════════════
+//  CONTEXT BUILDERS
+// ═══════════════════════════════════════════════
+function buildFullContext() {
+  if (!tasks.length) return 'No tasks exist yet.';
+
+  const today          = new Date().toISOString().split('T')[0];
+  const overdue        = tasks.filter(t => t.due && isOverdue(t.due) && t.status !== 'done');
+  const dueToday       = tasks.filter(t => t.due === today && t.status !== 'done');
+  const highNotStarted = tasks.filter(t => t.priority === 'high' && t.status === 'todo');
+  const inProgress     = tasks.filter(t => t.status === 'in_progress');
+  const done           = tasks.filter(t => t.status === 'done');
+
+  const header = [
+    `=== TASK DASHBOARD (as of ${today}) ===`,
+    `Total: ${tasks.length} | High priority unstarted: ${highNotStarted.length} | In progress: ${inProgress.length} | Done: ${done.length}`,
+    `Overdue: ${overdue.length} | Due today: ${dueToday.length}`,
+    overdue.length  ? `OVERDUE ITEMS: ${overdue.map(t => `"${t.title}" (${Math.abs(daysUntilDue(t.due))}d late)`).join(', ')}` : null,
+    dueToday.length ? `DUE TODAY: ${dueToday.map(t => `"${t.title}"`).join(', ')}` : null,
+  ].filter(Boolean).join('\n');
+
+  // FIX: Sort before slicing — overdue first, then high-priority unstarted, then rest.
+  // This ensures the most important tasks are always in the context window.
+  const sorted = [
+    ...tasks.filter(t => t.due && isOverdue(t.due) && t.status !== 'done'),
+    ...tasks.filter(t => t.priority === 'high' && t.status === 'todo' && !(t.due && isOverdue(t.due))),
+    ...tasks.filter(t => t.priority === 'high' && t.status === 'in_progress'),
+    ...tasks.filter(t => t.due && daysUntilDue(t.due) <= 3 && t.due !== today && t.status !== 'done'),
+    ...tasks.filter(t =>
+      !(t.due && isOverdue(t.due) && t.status !== 'done') &&
+      !(t.priority === 'high' && t.status !== 'done') &&
+      !(t.due && daysUntilDue(t.due) <= 3 && t.status !== 'done')
+    ),
+  ];
+  // Deduplicate (a task can match multiple buckets)
+  const seen = new Set();
+  const deduped = sorted.filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true; });
+
+  const truncated = deduped.length > 60;
+  const taskLines = deduped.slice(0, 60).map(t => {
+    const dueFlag = t.due
+      ? isOverdue(t.due) && t.status !== 'done' ? ` [OVERDUE ${Math.abs(daysUntilDue(t.due))}d]`
+      : daysUntilDue(t.due) === 0 ? ' [DUE TODAY]'
+      : daysUntilDue(t.due) <= 3 ? ` [DUE IN ${daysUntilDue(t.due)}d]`
+      : ` [due:${t.due}]`
+      : '';
+    const desc = t.description ? ` | Note: ${t.description.substring(0, 80)}${t.description.length > 80 ? '…' : ''}` : '';
+    return `• [${t.source.toUpperCase()}][${t.priority.toUpperCase()}][${t.status.replace('_',' ').toUpperCase()}] "${t.title}" — ${t.board||'No board'}${dueFlag}${desc}`;
+  });
+
+  return header + '\n\n=== ALL TASKS (priority-sorted) ===\n' + taskLines.join('\n')
+    + (truncated ? `\n[Note: ${tasks.length - 60} lower-priority tasks omitted from this view]` : '');
+}
+
+function buildFocusedContext(taskId, relatedCount = 6) {
+  const target = tasks.find(t => t.id === taskId);
+  if (!target) return buildFullContext();
+
+  // FIX: Rank related tasks by relevance — overdue same-board first, then same-board,
+  // then same-priority, not arbitrary insertion order.
+  const related = tasks
+    .filter(t => t.id !== taskId && (t.board === target.board || t.priority === target.priority))
+    .sort((a, b) => {
+      const aScore =
+        (a.board === target.board ? 2 : 0) +
+        (a.due && isOverdue(a.due) && a.status !== 'done' ? 3 : 0) +
+        (a.priority === 'high' ? 1 : 0);
+      const bScore =
+        (b.board === target.board ? 2 : 0) +
+        (b.due && isOverdue(b.due) && b.status !== 'done' ? 3 : 0) +
+        (b.priority === 'high' ? 1 : 0);
+      return bScore - aScore;
+    })
+    .slice(0, relatedCount);
+
+  const today = new Date().toISOString().split('T')[0];
+  const dueFlag = target.due
+    ? isOverdue(target.due) && target.status !== 'done'
+      ? `OVERDUE by ${Math.abs(daysUntilDue(target.due))} days`
+      : daysUntilDue(target.due) === 0 ? 'due TODAY'
+      : `due in ${daysUntilDue(target.due)} days`
+    : 'no due date';
+
+  const taskBlock = [
+    `=== TARGET TASK ===`,
+    `Title: "${target.title}"`,
+    `Source: ${target.source} | Board: ${target.board || 'N/A'}`,
+    `Priority: ${target.priority} | Status: ${target.status.replace('_',' ')}`,
+    `Due: ${target.due || 'none'} (${dueFlag})`,
+    `Description: ${target.description || 'none'}`,
+  ].join('\n');
+
+  const relatedBlock = related.length
+    ? '\n\n=== RELATED TASKS (ranked by relevance — same board/priority) ===\n' +
+      related.map(t => {
+        const rDue = t.due && isOverdue(t.due) && t.status !== 'done' ? ` [OVERDUE]` : t.due && daysUntilDue(t.due) <= 3 ? ` [DUE SOON]` : '';
+        return `• [${t.priority.toUpperCase()}][${t.status.replace('_',' ')}] "${t.title}" — ${t.board||'N/A'}${rDue}`;
+      }).join('\n')
+    : '';
+
+  return `Today: ${today}\n\n${taskBlock}${relatedBlock}`;
+}
+
+function buildSummaryContext() {
+  const counts = {
+    total:   tasks.length,
+    high:    tasks.filter(t => t.priority === 'high').length,
+    inProg:  tasks.filter(t => t.status === 'in_progress').length,
+    done:    tasks.filter(t => t.status === 'done').length,
+    overdue: tasks.filter(t => t.due && isOverdue(t.due) && t.status !== 'done').length,
+  };
+  // FIX: Sort by priority+recency before slicing so most relevant tasks are visible
+  // for update/delete matching — not arbitrary insertion order.
+  const sortedTitles = [...tasks]
+    .sort((a, b) => {
+      const priOrder = { high: 0, medium: 1, low: 2 };
+      return (priOrder[a.priority] ?? 1) - (priOrder[b.priority] ?? 1);
+    })
+    .slice(0, 25)
+    .map(t => `"${t.title}" [${t.source}][${t.priority}][${t.status}]`).join('\n');
+  return `Tasks: ${counts.total} total | ${counts.high} high | ${counts.inProg} in-progress | ${counts.done} done | ${counts.overdue} overdue\n\nAll tasks (high-priority first):\n${sortedTitles}`;
+}
+
+// ═══════════════════════════════════════════════
+//  SYSTEM PROMPT BUILDER
+// ═══════════════════════════════════════════════
+function buildSystemPrompt(intent) {
+  const today = new Date().toISOString().split('T')[0];
+
+  const ROLE = `# IDENTITY
+You are EvronAI, a sharp and efficient AI project management assistant. You have direct access to the user's live task data injected into every message.
+
+# COMMUNICATION STYLE
+- Be direct and specific. Reference actual task titles, not generic advice.
+- Response length scales with complexity: 1-2 sentences for simple ops, up to 8 bullet points for analysis, up to 12 lines for reports.
+- Never pad responses. Never say "Great question!" or "Certainly!".
+- Use bullet points (•) for lists. Bold (**text**) for task titles and key terms only.
+- Today's date: ${today}
+
+# AMBIGUITY HANDLING
+- If the user references a task and multiple tasks match, list the candidates by title and ask which one they mean. Do not guess.
+- If the user asks to add a task but provides no title, ask for the title before emitting any action. Do not invent one.
+- If a task title from the user does not exactly match any task in the data, say so and show the closest matches.`;
+
+  const ACTION_SCHEMA = `# ACTION PROTOCOL
+When the user's intent requires a task mutation, you MUST append exactly one ACTION block at the very END of your response, after all prose. Use this exact format — no markdown fences around it:
+
+ACTION_JSON:{"action":"<type>","payload":<payload>}
+
+Valid action types and their payload schemas:
+
+add_task      → payload: {"title":"string","priority":"high|medium|low","status":"todo|in_progress|done","board":"string","description":"string","due":"YYYY-MM-DD"|null,"source":"ai"}
+add_tasks     → payload: [{"title":"string","priority":"high|medium|low","status":"todo","board":"string","description":"string","due":null,"source":"ai"}]
+update_task   → payload: {"match":"exact task title from data","changes":{"priority":"?","status":"?","board":"?","due":"?"}}
+update_tasks  → payload: [{"match":"title","changes":{}}]
+delete_done   → payload: null
+delete_task   → payload: {"match":"exact task title"}
+none          → payload: null
+
+Rules:
+1. Only emit an ACTION block when the user explicitly requests a mutation.
+2. The payload MUST use exact task titles from the task data when matching existing tasks.
+3. If no exact title match exists, do NOT emit an action — instead tell the user what you found and ask them to confirm.
+4. Never emit an action without explaining it first in your prose response.
+5. For delete_done and delete_task, state exactly what will be deleted in your prose before the action.`;
+
+  const INTENT_INSTRUCTIONS = {
+    [INTENT.ADD]: `# CURRENT TASK
+The user wants to add a task. Extract: title (required), priority (default medium), board (infer from context or use "AI Generated"), due date (if mentioned), description.
+- If the title is not clearly stated, ask for it before emitting any action.
+- Confirm what you are adding in one sentence, then emit the action.`,
+
+    [INTENT.DELETE]: `# CURRENT TASK
+The user wants to delete tasks. State exactly which tasks will be removed and how many, then emit the action.
+- If the request is ambiguous about which tasks to delete, ask for clarification before acting.`,
+
+    [INTENT.UPDATE]: `# CURRENT TASK
+The user wants to update one or more tasks. Match tasks by their exact title from the task data.
+- If no exact match is found, list the closest-matching task titles and ask the user to confirm which one.
+- State what you are changing and on which task, then emit the action.`,
+
+    [INTENT.ANALYZE]: `# CURRENT TASK
+Analyze the specific task(s) requested. Structure your response as:
+1. **State** — current situation (priority, status, days until due or overdue status)
+2. **Risks** — specific blockers or concerns. Reference the description if present.
+3. **Next action** — the single most important thing to do next, stated concretely.
+Also check the related tasks in the context — if any create dependencies or compound the risk, call them out explicitly.`,
+
+    [INTENT.PRIORITIZE]: `# CURRENT TASK
+Help the user decide what to work on next. Rank up to 5 tasks using this strict order:
+1. Overdue tasks (by how many days late, most late first)
+2. Tasks due today
+3. High priority tasks not yet started
+4. High priority tasks in-progress with a due date within 3 days
+Explain in one sentence why each item ranks where it does. Do not include stalled in-progress tasks unless they have an imminent due date — you cannot determine staleness without timestamps.`,
+
+    [INTENT.REPORT]: `# CURRENT TASK
+Generate a structured project status report with these four sections:
+**Overview** — total tasks, breakdown by status, overdue count
+**Wins** — high-priority or previously-overdue tasks that are now done (not just any done task)
+**Risks** — overdue items, high-priority unstarted items, tasks due within 3 days; cite specific task titles
+**Recommendations** — exactly 3 specific, actionable next steps citing task names`,
+
+    [INTENT.RISK]: `# CURRENT TASK
+Identify genuine project risks. Check for each of these patterns and report only those that apply:
+- Overdue tasks: cite title, how many days late, and board
+- High-priority tasks with todo status: how long they may have been waiting (if due date implies it)
+- Tasks due within 3 days that are not yet in-progress
+- Boards where all non-done tasks are high priority (concentrated risk)
+Do NOT flag: tasks simply because they are in-progress and high priority — that is normal work, not a risk.`,
+
+    [INTENT.GENERAL]: `# CURRENT TASK
+Answer the user's question using the task data provided. Be specific and reference task names.
+- 150 words maximum. If the question genuinely requires more, answer the core question first, then offer to elaborate.
+- If the question is unrelated to the task data, answer from general knowledge and keep it brief.`,
+  };
+
+  return [ROLE, ACTION_SCHEMA, INTENT_INSTRUCTIONS[intent] || INTENT_INSTRUCTIONS[INTENT.GENERAL]].join('\n\n');
+}
+
+// ═══════════════════════════════════════════════
+//  ACTION PARSING — robust extraction + execution
+// ═══════════════════════════════════════════════
+function extractActionJSON(text) {
+  const patterns = [
+    /ACTION_JSON:\s*```(?:json)?\s*([\s\S]+?)\s*```/i,
+    /ACTION_JSON:\s*(\{[\s\S]+?\})\s*$/m,
+    /ACTION_JSON:\s*(\[[\s\S]+?\])\s*$/m,
+    /ACTION_JSON:\s*(\{[\s\S]+\})/,
+  ];
+  for (const pat of patterns) {
+    const m = text.match(pat);
+    if (m) {
+      try { return { json: JSON.parse(m[1]), raw: m[0] }; } catch {}
+    }
+  }
+  return null;
+}
+
+function processAIActions(text) {
+  const result = extractActionJSON(text);
+  if (!result) return text;
+
+  const { json: envelope, raw } = result;
+  const action  = envelope.action;
+  const payload = envelope.payload;
+
+  try {
+    if (action === 'add_task' && payload?.title) {
+      const t = { id:'ai-'+Date.now(), source:'ai', priority:'medium', status:'todo', board:'AI Generated', description:'', due:null, ...payload };
+      tasks.push(t);
+      saveTasks(); updateStats(); renderTasks();
+      toast(`✅ AI added: "${t.title}"`, 'ok');
+
+    } else if (action === 'add_tasks' && Array.isArray(payload)) {
+      payload.forEach((p, i) => {
+        const t = { id:'ai-'+Date.now()+i, source:'ai', priority:'medium', status:'todo', board:'AI Generated', description:'', due:null, ...p };
+        tasks.push(t);
+      });
+      saveTasks(); updateStats(); renderTasks();
+      toast(`✅ AI added ${payload.length} tasks`, 'ok');
+
+    } else if (action === 'update_task' && payload?.match) {
+      const t = tasks.find(x => x.title === payload.match || x.id === payload.match);
+      if (t && payload.changes) {
+        Object.assign(t, payload.changes);
+        saveTasks(); updateStats(); renderTasks();
+        toast('✏️ Task updated', 'ok');
+      }
+
+    } else if (action === 'update_tasks' && Array.isArray(payload)) {
+      let updated = 0;
+      payload.forEach(({ match, changes }) => {
+        const t = tasks.find(x => x.title === match || x.id === match);
+        if (t && changes) { Object.assign(t, changes); updated++; }
+      });
+      if (updated) { saveTasks(); updateStats(); renderTasks(); toast(`✏️ Updated ${updated} tasks`, 'ok'); }
+
+    } else if (action === 'delete_done') {
+      const n = tasks.filter(t => t.status === 'done').length;
+      tasks = tasks.filter(t => t.status !== 'done');
+      saveTasks(); updateStats(); renderTasks();
+      if (n) toast(`🗑️ Deleted ${n} completed tasks`, 'ok');
+
+    } else if (action === 'delete_task' && payload?.match) {
+      const before = tasks.length;
+      tasks = tasks.filter(t => t.title !== payload.match && t.id !== payload.match);
+      if (tasks.length < before) { saveTasks(); updateStats(); renderTasks(); toast('🗑️ Task deleted', 'ok'); }
+    }
+    // action === 'none' — do nothing, just strip the block
+  } catch(e) { console.warn('Action processing error:', e); }
+
+  // Remove the ACTION block from displayed text — always strip from end
+  return text.replace(raw, '').replace(/\n+$/, '').trim();
+}
+
+// ═══════════════════════════════════════════════
+//  HISTORY SUMMARISATION
+//  When history exceeds HISTORY_MAX turns, compress
+//  the oldest half into a prose summary so context
+//  is never lost even in long conversations.
+// ═══════════════════════════════════════════════
+const HISTORY_MAX = 14; // 7 back-and-forth exchanges
+
+async function maybeCompressHistory() {
+  if (chatHistory.length <= HISTORY_MAX) return;
+
+  // Split: compress the oldest half, keep the newest half live
+  const splitAt    = Math.floor(chatHistory.length / 2);
+  const toCompress = chatHistory.slice(0, splitAt);
+  const toKeep     = chatHistory.slice(splitAt);
+
+  // Build a plain-text summary of the old turns
+  const summaryLines = toCompress.map(m =>
+    `${m.role === 'user' ? 'User' : 'AI'}: ${m.content.substring(0, 120)}${m.content.length > 120 ? '…' : ''}`
+  ).join('\n');
+
+  // If DeepSeek is available, ask it to summarise — otherwise do a simple concat
+  if (cfg.dsKey) {
+    try {
+      const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.dsKey}` },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            { role: 'system', content: `Summarise this conversation excerpt into 3-5 tight bullet points for use as future context.
+Focus specifically on:
+- Task titles the user mentioned by name (add, update, delete, or ask about)
+- Any status or priority changes that were made
+- Preferences or working style the user expressed (e.g. "I prefer high-priority first", "skip the backend board")
+- Any pending questions or confirmations left unresolved
+Do NOT include generic observations. Be factual. Each bullet should be a single concrete statement.` },
+            { role: 'user', content: summaryLines }
+          ],
+          temperature: 0.1,
+          max_tokens: 300,
+        })
+      });
+      if (resp.ok) {
+        const d = await resp.json();
+        const aiSummary = d.choices?.[0]?.message?.content || '';
+        historySummary = (historySummary ? historySummary + '\n\n' : '') +
+          `[Earlier conversation summary]\n${aiSummary}`;
+      } else {
+        // Fallback: plain concat
+        historySummary = (historySummary ? historySummary + '\n' : '') + summaryLines;
+      }
+    } catch {
+      historySummary = (historySummary ? historySummary + '\n' : '') + summaryLines;
+    }
+  } else {
+    historySummary = (historySummary ? historySummary + '\n' : '') + summaryLines;
+  }
+
+  chatHistory = toKeep;
+}
+
+// ═══════════════════════════════════════════════
+//  DEEPSEEK — STREAMING API CALL
+//  Streams tokens directly into the chat bubble.
+//  Falls back to non-streaming on error.
+//  Returns the complete text when done.
+// ═══════════════════════════════════════════════
+async function callDeepSeekStream(userMsg, intent, contextOverride, onChunk) {
+  if (!cfg.dsKey) return null;
+
+  const context = contextOverride || (
+    [INTENT.ADD, INTENT.DELETE, INTENT.UPDATE].includes(intent)
+      ? buildSummaryContext()
+      : buildFullContext()
+  );
+
+  // FIX: Summary injected BEFORE task data so the model reads conversation
+  // context before it encounters the live task list — gives it higher weight.
+  const summaryBlock = historySummary
+    ? `\n\n# PRIOR CONVERSATION CONTEXT\n${historySummary}`
+    : '';
+
+  const systemMsg = buildSystemPrompt(intent) + summaryBlock + '\n\n# LIVE TASK DATA\n' + context;
+
+  const messages = [
+    { role: 'system', content: systemMsg },
+    ...chatHistory.slice(-HISTORY_MAX),
+    { role: 'user',   content: userMsg },
+  ];
+
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.dsKey}` },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages,
+      temperature: [INTENT.REPORT, INTENT.ANALYZE, INTENT.RISK].includes(intent) ? 0.4 : 0.25,
+      max_tokens: tokenBudget(intent),
+      stream: true,
+    })
+  });
+
+  if (resp.status === 401) throw new Error('Invalid DeepSeek API key — update it in Connect Sources');
+  if (resp.status === 429) throw new Error('Rate limit reached — wait a moment and try again');
+  if (!resp.ok) throw new Error(`DeepSeek API error ${resp.status}`);
+
+  // Read the SSE stream
+  const reader  = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText  = '';
+  let buffer    = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    // SSE lines are separated by \n\n; each line is "data: {...}"
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // keep incomplete last line in buffer
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed === 'data: [DONE]') continue;
+      if (!trimmed.startsWith('data: ')) continue;
+      try {
+        const json  = JSON.parse(trimmed.slice(6));
+        const delta = json.choices?.[0]?.delta?.content || '';
+        if (delta) {
+          fullText += delta;
+          onChunk(fullText);
+        }
+      } catch { /* malformed chunk — skip */ }
+    }
+  }
+
+  return fullText;
+}
+
+// ═══════════════════════════════════════════════
+//  SHARED CHAT EXECUTOR
+//  Single function that all chat entry points use.
+//  Eliminates duplicated try/catch/finally across
+//  sendMsg, qp, aiAnalyzeTask, aiAnalyzeAll.
+//
+//  params:
+//    userPrompt   — what goes to the AI
+//    displayText  — what shows in the chat bubble (may differ)
+//    intent       — INTENT.* value
+//    contextOverride — optional context string (focused analysis)
+//    onDone       — optional callback after completion
+// ═══════════════════════════════════════════════
+async function executeChat({ userPrompt, displayText, intent, contextOverride = null, onDone = null }) {
+  if (aiThinking) return;
+
+  addChatMsg('user', displayText || userPrompt);
+  chatHistory.push({ role: 'user', content: userPrompt });
+
+  aiThinking = true;
+  document.getElementById('send-btn').disabled = true;
+
+  // Compress history if needed (async, non-blocking to user)
+  maybeCompressHistory(); // fire-and-forget — compression happens in background
+
+  let reply = '';
+
+  if (cfg.dsKey) {
+    // ── Streaming path ──
+    // Create the bubble immediately, stream into it
+    const bubbleEl = createStreamingBubble();
+
+    try {
+      const raw = await callDeepSeekStream(
+        userPrompt, intent, contextOverride,
+        (partialText) => {
+          // Update bubble live with each chunk, stripping ACTION block if present
+          const displayable = stripActionBlock(partialText);
+          updateStreamingBubble(bubbleEl, displayable);
+        }
+      );
+
+      // Final processing on complete text
+      reply = processAIActions(raw || 'I received an empty response. Please try again.');
+      finaliseStreamingBubble(bubbleEl, reply);
+
+    } catch(e) {
+      finaliseStreamingBubble(bubbleEl, '');
+      const isAuth = e.message.includes('Invalid DeepSeek') || e.message.includes('401');
+      addChatMsg('ai', isAuth ? `🔑 **API Key Issue**: ${e.message}` : `⚠️ ${e.message}`);
+      reply = ''; // don't push error to history
+    }
+
+  } else {
+    // ── Fallback path ──
+    const typingEl = showTyping();
+    await new Promise(r => setTimeout(r, 350));
+    try {
+      reply = fallbackReply(userPrompt, intent);
+      typingEl.remove();
+      addChatMsg('ai', reply);
+    } catch(e) {
+      typingEl.remove();
+      addChatMsg('ai', `⚠️ ${e.message}`);
+      reply = '';
+    }
+  }
+
+  if (reply) chatHistory.push({ role: 'assistant', content: reply });
+
+  aiThinking = false;
+  document.getElementById('send-btn').disabled = false;
+  if (onDone) onDone();
+}
+
+// Strip ACTION block from partial text for display during streaming
+// so the user never sees raw JSON while it's being typed
+function stripActionBlock(text) {
+  return text
+    .replace(/ACTION_JSON:\s*```[\s\S]*?```/g, '')
+    .replace(/ACTION_JSON:\s*\{[\s\S]*$/, '') // partial JSON at end — hide it
+    .replace(/ACTION_JSON:\s*\[[\s\S]*$/, '')
+    .trimEnd();
+}
+
+// ── Streaming bubble helpers ──
+function createStreamingBubble() {
+  const area = document.getElementById('chat');
+  const div  = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = `<div class="msg-who">🤖 EVRONAI</div><div class="bubble stream-bubble"></div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return div.querySelector('.stream-bubble');
+}
+
+function updateStreamingBubble(el, partialText) {
+  const safe = renderMarkdown(partialText);
+  el.innerHTML = safe + '<span class="stream-cursor"></span>';
+  el.closest('.chat-body, #chat').scrollTop = el.closest('.chat-body, #chat').scrollHeight;
+}
+
+function finaliseStreamingBubble(el, finalText) {
+  if (finalText) {
+    el.innerHTML = renderMarkdown(finalText);
+  } else {
+    // Remove the bubble entirely if we have no text (error case)
+    const msgDiv = el.closest('.msg');
+    if (msgDiv) msgDiv.remove();
+  }
+  const chat = document.getElementById('chat');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// ── Markdown renderer (shared by all bubble types) ──
+function renderMarkdown(text) {
+  return esc(text)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:0.9em">$1</code>')
+    .replace(/\n#{1,3} (.*)/g, (_, h) => `<br><strong style="font-size:1.05em">${h}</strong>`)
+    .replace(/\n• /g, '<br>• ')
+    .replace(/\n(\d+)\. /g, '<br>$1. ')
+    .replace(/\n/g, '<br>');
+}
+
+// ═══════════════════════════════════════════════
+//  PUBLIC ENTRY POINTS — all delegate to executeChat
+// ═══════════════════════════════════════════════
+async function sendMsg() {
+  const ta   = document.getElementById('chat-in');
+  const text = ta.value.trim();
+  if (!text || aiThinking) return;
+  ta.value = ''; autoResize(ta);
+  await executeChat({ userPrompt: text, displayText: text, intent: detectIntent(text) });
+}
+
+function qp(text) {
+  // Quick prompts: display text IS the prompt, no textarea involvement
+  executeChat({ userPrompt: text, displayText: text, intent: detectIntent(text) });
+}
+
+async function aiAnalyzeTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t || aiThinking) return;
+
+  const btn = document.getElementById('aibtn-' + safeId(id));
+  if (btn) { btn.innerHTML = '<i class="fas fa-spinner spin"></i>'; btn.disabled = true; }
+
+  const daysLeft = t.due ? daysUntilDue(t.due) : null;
+  const dueLabel = daysLeft === null ? 'no due date'
+    : daysLeft < 0  ? `OVERDUE by ${Math.abs(daysLeft)} days`
+    : daysLeft === 0 ? 'due TODAY'
+    : `${daysLeft} days until due`;
+
+  const displayText = `🔍 Analyze: **"${t.title}"**`;
+  // FIX: Explicitly instruct the model to use the related tasks context — it
+  // receives them in the context block but without instruction won't use them.
+  const userPrompt  = `Analyze this task and give me exactly 3 things:
+1. **State** — current situation including priority, status, and due date urgency
+2. **Risks** — specific blockers or concerns; if the description mentions anything relevant, reference it directly; also check if any of the related tasks in context create dependencies or compound the risk
+3. **Next action** — the single most important concrete thing to do next
+
+Task: "${t.title}"
+Priority: ${t.priority} | Status: ${t.status.replace('_',' ')} | Source: ${t.source}
+Board: ${t.board || 'none'} | Due: ${t.due || 'none'} (${dueLabel})
+Description: ${t.description || 'none provided'}`;
+
+  await executeChat({
+    userPrompt,
+    displayText,
+    intent: INTENT.ANALYZE,
+    contextOverride: buildFocusedContext(id),
+    onDone: () => {
+      if (btn) { btn.innerHTML = '<i class="fas fa-robot"></i>'; btn.disabled = false; }
+    }
+  });
+}
+
+async function aiAnalyzeAll() {
+  if (aiThinking) return;
+
+  const today   = new Date().toISOString().split('T')[0];
+  const overdue = tasks.filter(t => t.due && isOverdue(t.due) && t.status !== 'done');
+  const high    = tasks.filter(t => t.priority === 'high' && t.status !== 'done');
+  const inProg  = tasks.filter(t => t.status === 'in_progress');
+  const boards  = [...new Set(tasks.map(t => t.board).filter(Boolean))];
+  const dueSoon = tasks.filter(t => t.due && daysUntilDue(t.due) <= 3 && t.due !== today && t.status !== 'done');
+
+  const situations = [];
+  if (overdue.length) situations.push(`${overdue.length} overdue task${overdue.length > 1 ? 's' : ''}`);
+  if (high.filter(t => t.status === 'todo').length) situations.push(`${high.filter(t => t.status === 'todo').length} high-priority items not started`);
+  if (inProg.length > 5) situations.push(`${inProg.length} tasks simultaneously in progress`);
+  if (boards.length > 3) situations.push(`work spread across ${boards.length} boards`);
+  if (dueSoon.length) situations.push(`${dueSoon.length} task${dueSoon.length > 1 ? 's' : ''} due within 3 days`);
+
+  const situationClause = situations.length ? `Current situation: ${situations.join(', ')}.\n\n` : '';
+
+  // FIX: aiAnalyzeAll gets its own output format — an analysis is not a report.
+  // A report is structured and backward-looking. An analysis is forward-looking
+  // and surfaces non-obvious patterns.
+  const userPrompt = `${situationClause}Analyze my ${tasks.length} tasks and give me:
+
+**Patterns** — what systemic issues do you see across boards or priorities? (not individual task status, but themes)
+**Biggest risk right now** — the single most likely thing to cause a problem this week and why
+**Focus for today** — the 3 tasks I should work on today with a one-line reason for each
+**One thing to stop doing** — is there anything in this task list that looks like it should be closed/removed/delegated rather than done?
+
+Be specific. Reference task titles. Do not just list overdue items — I can already see those.`;
+
+  const displayText = `📊 Deep Analysis (${tasks.length} tasks)`;
+
+  // Use ANALYZE intent (not REPORT) — this produces insight, not a structured report
+  await executeChat({ userPrompt, displayText, intent: INTENT.ANALYZE });
+}
+
+// ═══════════════════════════════════════════════
+//  CHAT UI HELPERS
+// ═══════════════════════════════════════════════
+function addChatMsg(role, text) {
+  const area = document.getElementById('chat');
+  const div  = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `<div class="msg-who">${role === 'user' ? '👤 YOU' : '🤖 EVRONAI'}</div><div class="bubble">${renderMarkdown(text)}</div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping() {
+  const area = document.getElementById('chat');
+  const div  = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = `<div class="msg-who">🤖 EVRONAI</div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return div;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+function srcIcon(src) {
+  return ({ trello:'<i class="fab fa-trello"></i>', jira:'<i class="fab fa-jira"></i>',
+    gmail:'<i class="fab fa-google"></i>', slack:'<i class="fab fa-slack"></i>',
+    monday:'<i class="fas fa-calendar-alt"></i>', asana:'<i class="fab fa-asana"></i>',
+    ai:'<i class="fas fa-robot"></i>' })[src] || '<i class="fas fa-tasks"></i>';
+}
+
+function toast(msg, type='info') {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.style.transition = 'opacity 0.35s';
+    t.style.opacity = '0';
+    setTimeout(() => t.remove(), 380);
+  }, 3200);
+}
+
+// ═══════════════════════════════════════════════
+//  WRITE-BACK — push status/priority changes to source
+// ═══════════════════════════════════════════════
+async function writeBack(task) {
+  if (!task || !task.source || !task.id) return;
+
+  try {
+    if (task.source === 'trello' && cfg.trKey && cfg.trTok) {
+      const cardId = task.id.replace('tr-', '');
+      // Map status back to list ID — we need the listIdMap from the board
+      // For now push description + labels only (list movement requires a separate list fetch)
+      const labelColors = { high:'red', medium:'yellow', low:'green' };
+      const body = new URLSearchParams({
+        key:   cfg.trKey,
+        token: cfg.trTok,
+        desc:  task.description || '',
+        due:   task.due ? task.due + 'T23:59:00.000Z' : 'null',
+      });
+      await fetchWithRetry(`https://api.trello.com/1/cards/${cardId}`, {
+        method: 'PUT', body
+      });
+      toast('🟦 Synced to Trello', 'ok');
+    }
+
+    if (task.source === 'jira' && cfg.jiDomain && cfg.jiEmail && cfg.jiTok) {
+      const issueId = task.id.replace('ji-', '');
+      const domain  = cfg.jiDomain.replace(/^https?:\/\//, '');
+      const auth    = btoa(`${cfg.jiEmail}:${cfg.jiTok}`);
+      const priMap  = { high:'High', medium:'Medium', low:'Low' };
+      const stMap   = { todo:'To Do', in_progress:'In Progress', done:'Done' };
+
+      // Update priority and description
+      await fetchWithRetry(`https://${domain}/rest/api/3/issue/${issueId}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            priority: { name: priMap[task.priority] || 'Medium' },
+            description: task.description ? {
+              type: 'doc', version: 1,
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: task.description }] }]
+            } : undefined,
+            duedate: task.due || null,
+          }
+        })
+      });
+
+      // Transition status if possible
+      const transMap = { todo:'11', in_progress:'21', done:'31' }; // common Jira transition IDs
+      const tid = transMap[task.status];
+      if (tid) {
+        await fetchWithRetry(`https://${domain}/rest/api/3/issue/${issueId}/transitions`, {
+          method: 'POST',
+          headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transition: { id: tid } })
+        }).catch(() => {}); // swallow — transition IDs vary per project
+      }
+      toast('🔵 Synced to Jira', 'ok');
+    }
+
+    if (task.source === 'asana' && cfg.asTok) {
+      const gid = task.id.replace('as-', '');
+      await fetchWithRetry(`https://app.asana.com/api/1.0/tasks/${gid}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${cfg.asTok}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: {
+          name: task.title,
+          notes: task.description || '',
+          due_on: task.due || null,
+          completed: task.status === 'done',
+        }})
+      });
+      toast('🟧 Synced to Asana', 'ok');
+    }
+
+    if (task.source === 'monday' && cfg.moTok) {
+      const itemId = task.id.replace('mo-', '');
+      const stateMap = { done:'done', in_progress:'working_on_it', todo:'not_started' };
+      const gql = `mutation { change_column_value(item_id: ${itemId}, board_id: 0, column_id: "status", value: "{\\"label\\":\\"${stateMap[task.status]||'not_started'}\\"}") { id } }`;
+      await fetchWithRetry('https://api.monday.com/v2', {
+        method: 'POST',
+        headers: { 'Authorization': cfg.moTok, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: gql })
+      }).catch(() => {});
+      toast('🔴 Synced to Monday', 'ok');
+    }
+  } catch(e) {
+    toast(`⚠️ Write-back failed: ${e.message}`, 'err');
+  }
+}
+
+// Wrap cycleStatus to trigger write-back
+const _origCycleStatus = cycleStatus;
+function cycleStatus(id) {
+  _origCycleStatus(id);
+  const t = tasks.find(x => x.id === id);
+  if (t && ['trello','jira','asana','monday'].includes(t.source)) {
+    writeBack(t);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  AUTO-REFRESH — configurable polling
+// ═══════════════════════════════════════════════
+const REFRESH_INTERVALS = [0, 5 * 60000, 15 * 60000, 30 * 60000]; // off, 5m, 15m, 30m
+let refreshIntervalIdx = 0;
+
+function toggleAutoRefresh() {
+  refreshIntervalIdx = (refreshIntervalIdx + 1) % REFRESH_INTERVALS.length;
+  const ms = REFRESH_INTERVALS[refreshIntervalIdx];
+
+  if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+
+  const labels = ['Auto', '5m', '15m', '30m'];
+  const labelEl = document.getElementById('ar-label');
+  const dotEl   = document.getElementById('ar-dot');
+  if (labelEl) labelEl.textContent = labels[refreshIntervalIdx];
+
+  if (ms > 0) {
+    autoRefreshEnabled = true;
+    dotEl?.classList.add('active');
+    autoRefreshTimer = setInterval(() => {
+      if (!aiThinking) syncAll();
+    }, ms);
+    toast(`🔄 Auto-refresh: every ${labels[refreshIntervalIdx]}`, 'info');
+  } else {
+    autoRefreshEnabled = false;
+    dotEl?.classList.remove('active');
+    toast('⏸️ Auto-refresh off', 'info');
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  NOTIFICATIONS — browser Notification API
+// ═══════════════════════════════════════════════
+async function requestNotifications() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') { notificationsEnabled = true; return true; }
+  if (Notification.permission !== 'denied') {
+    const perm = await Notification.requestPermission();
+    notificationsEnabled = perm === 'granted';
+    return notificationsEnabled;
+  }
+  return false;
+}
+
+function checkNotifications() {
+  if (!notificationsEnabled) return;
+  const today = new Date().toISOString().split('T')[0];
+  const overdue  = tasks.filter(t => t.due && isOverdue(t.due) && t.status !== 'done');
+  const dueToday = tasks.filter(t => t.due === today && t.status !== 'done');
+  const newTasks = tasks.filter(t => !seenTaskIds.has(t.id) && t.priority === 'high');
+
+  // Update badge
+  const count = overdue.length + newTasks.length;
+  const badge = document.getElementById('notif-badge');
+  if (badge) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.className = 'notif-badge' + (count > 0 ? ' show' : '');
+  }
+
+  // Fire browser notifications for newly detected issues
+  newTasks.forEach(t => {
+    seenTaskIds.add(t.id);
+    new Notification('EvronAI — New High Priority Task', {
+      body: t.title,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="%236c63ff"/><text x="16" y="21" text-anchor="middle" font-size="14" fill="white" font-family="sans-serif">AI</text></svg>'
+    });
+  });
+
+  if (overdue.length > 0 && !seenTaskIds.has('overdue-notif-' + today)) {
+    seenTaskIds.add('overdue-notif-' + today);
+    new Notification(`EvronAI — ${overdue.length} Overdue Task${overdue.length > 1 ? 's' : ''}`, {
+      body: overdue.slice(0, 3).map(t => `• ${t.title}`).join('\n'),
+    });
+  }
+}
+
+function showNotifications() {
+  const today = new Date().toISOString().split('T')[0];
+  const overdue  = tasks.filter(t => t.due && isOverdue(t.due) && t.status !== 'done');
+  const dueToday = tasks.filter(t => t.due === today && t.status !== 'done');
+  const high     = tasks.filter(t => t.priority === 'high' && t.status !== 'done');
+
+  if (!overdue.length && !dueToday.length && !high.length) {
+    toast('✅ No alerts — everything looks good', 'ok'); return;
+  }
+  if (!notificationsEnabled) {
+    requestNotifications().then(ok => {
+      if (ok) toast('🔔 Browser notifications enabled', 'ok');
+      else toast('🔕 Enable notifications in browser settings', 'info');
+    });
+    return;
+  }
+
+  // Show a summary toast
+  const msgs = [];
+  if (overdue.length)  msgs.push(`⚠️ ${overdue.length} overdue`);
+  if (dueToday.length) msgs.push(`⏰ ${dueToday.length} due today`);
+  if (high.filter(t => t.status === 'todo').length) msgs.push(`🚨 ${high.filter(t=>t.status==='todo').length} high priority not started`);
+  toast(msgs.join(' · '), 'info');
+}
+
+// ═══════════════════════════════════════════════
+//  GMAIL OAUTH 2.0 PKCE
+// ═══════════════════════════════════════════════
+function updateGmailStatus() {
+  const statusEl = document.getElementById('gm-oauth-status');
+  const revokeBtn = document.getElementById('gm-revoke-btn');
+  if (!statusEl) return;
+  if (cfg.gmAccessToken && cfg.gmEmail) {
+    statusEl.innerHTML = `<div style="color:var(--accent2);font-size:12px;font-weight:600;padding:8px 12px;background:rgba(0,212,170,0.1);border-radius:6px">✅ Connected as ${cfg.gmEmail}</div>`;
+    if (revokeBtn) revokeBtn.style.display = 'block';
+  } else {
+    statusEl.innerHTML = '';
+    if (revokeBtn) revokeBtn.style.display = 'none';
+  }
+}
+
+async function startGmailOAuth() {
+  const clientId = document.getElementById('gm-client-id')?.value.trim();
+  if (!clientId) { toast('Enter your Google OAuth Client ID first', 'err'); return; }
+
+  // Generate PKCE code verifier and challenge
+  const verifier = generateCodeVerifier();
+  const challenge = await generateCodeChallenge(verifier);
+  sessionStorage.setItem('gm_pkce_verifier', verifier);
+  sessionStorage.setItem('gm_client_id', clientId);
+
+  const redirectUri = encodeURIComponent(location.origin + location.pathname);
+  const scope = encodeURIComponent('https://www.googleapis.com/auth/gmail.readonly');
+  const state = Math.random().toString(36).slice(2);
+  sessionStorage.setItem('gm_oauth_state', state);
+
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code` +
+    `&scope=${scope}&state=${state}&code_challenge=${challenge}` +
+    `&code_challenge_method=S256&access_type=offline&prompt=consent`;
+
+  // Save client ID to config immediately
+  cfg.gmClientId = clientId;
+  const encrypted = await encryptCfg(cfg);
+  localStorage.setItem(STORE_KEY, encrypted);
+
+  window.location.href = authUrl;
+}
+
+async function handleOAuthCallback() {
+  const params = new URLSearchParams(location.search);
+  const code   = params.get('code');
+  const state  = params.get('state');
+  const error  = params.get('error');
+
+  if (error) { toast('Gmail OAuth denied: ' + error, 'err'); cleanOAuthUrl(); return; }
+  if (!code)  return; // not an OAuth callback
+
+  const savedState = sessionStorage.getItem('gm_oauth_state');
+  if (state !== savedState) { toast('OAuth state mismatch — possible CSRF', 'err'); cleanOAuthUrl(); return; }
+
+  const verifier  = sessionStorage.getItem('gm_pkce_verifier');
+  const clientId  = sessionStorage.getItem('gm_client_id') || cfg.gmClientId;
+  const redirectUri = location.origin + location.pathname;
+
+  try {
+    const resp = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code, client_id: clientId, redirect_uri: redirectUri,
+        code_verifier: verifier, grant_type: 'authorization_code'
+      })
+    });
+    const tokens = await resp.json();
+    if (!resp.ok) throw new Error(tokens.error_description || 'Token exchange failed');
+
+    // Fetch user email
+    const profileResp = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { 'Authorization': `Bearer ${tokens.access_token}` }
+    });
+    const profile = await profileResp.json();
+
+    cfg.gmAccessToken  = tokens.access_token;
+    cfg.gmRefreshToken = tokens.refresh_token || cfg.gmRefreshToken;
+    cfg.gmTokenExpiry  = Date.now() + (tokens.expires_in * 1000);
+    cfg.gmEmail        = profile.email;
+    cfg.gmClientId     = clientId;
+
+    const encrypted = await encryptCfg(cfg);
+    localStorage.setItem(STORE_KEY, encrypted);
+    sessionStorage.removeItem('gm_pkce_verifier');
+    sessionStorage.removeItem('gm_oauth_state');
+    toast(`✅ Gmail connected: ${profile.email}`, 'ok');
+  } catch(e) {
+    toast('Gmail OAuth failed: ' + e.message, 'err');
+  }
+  cleanOAuthUrl();
+}
+
+async function refreshGmailToken() {
+  if (!cfg.gmRefreshToken || !cfg.gmClientId) return false;
+  if (cfg.gmTokenExpiry && Date.now() < cfg.gmTokenExpiry - 60000) return true; // still valid
+  try {
+    const resp = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        refresh_token: cfg.gmRefreshToken,
+        client_id: cfg.gmClientId,
+        grant_type: 'refresh_token'
+      })
+    });
+    const tokens = await resp.json();
+    if (!resp.ok) throw new Error(tokens.error);
+    cfg.gmAccessToken  = tokens.access_token;
+    cfg.gmTokenExpiry  = Date.now() + (tokens.expires_in * 1000);
+    const encrypted = await encryptCfg(cfg);
+    localStorage.setItem(STORE_KEY, encrypted);
+    return true;
+  } catch { return false; }
+}
+
+async function syncGmail() {
+  if (!cfg.gmAccessToken) return [];
+  const valid = await refreshGmailToken();
+  if (!valid) { toast('⚠️ Gmail token expired — reconnect in Connect Sources', 'err'); return []; }
+
+  // Fetch unread emails from INBOX via Gmail REST API
+  const listResp = await fetchWithRetry(
+    'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=20&labelIds=INBOX&q=is:unread',
+    { headers: { 'Authorization': `Bearer ${cfg.gmAccessToken}` } }
+  );
+  if (!listResp.ok) throw new Error(`Gmail API ${listResp.status}`);
+  const list = await listResp.json();
+  const messages = list.messages || [];
+
+  const emailTasks = [];
+  for (const msg of messages.slice(0, 10)) {
+    const msgResp = await fetchWithRetry(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
+      { headers: { 'Authorization': `Bearer ${cfg.gmAccessToken}` } }
+    );
+    if (!msgResp.ok) continue;
+    const data   = await msgResp.json();
+    const headers = data.payload?.headers || [];
+    const subject = headers.find(h => h.name === 'Subject')?.value || '(no subject)';
+    const from    = headers.find(h => h.name === 'From')?.value    || 'Unknown sender';
+    const date    = headers.find(h => h.name === 'Date')?.value    || '';
+    const id      = 'gm-' + msg.id;
+    if (tasks.some(t => t.id === id)) continue;
+    const isUrgent = /urgent|asap|important|action required|deadline/i.test(subject);
+    emailTasks.push({
+      id, source: 'gmail',
+      title: subject.substring(0, 100),
+      description: `From: ${from}${date ? ' · ' + new Date(date).toLocaleDateString() : ''}`,
+      priority: isUrgent ? 'high' : 'medium',
+      status: 'todo',
+      board: 'Gmail Inbox',
+      due: null
+    });
+  }
+  return emailTasks;
+}
+
+function revokeGmail() {
+  if (!confirm('Disconnect Gmail? You will need to reconnect to sync emails.')) return;
+  cfg.gmAccessToken = null; cfg.gmRefreshToken = null;
+  cfg.gmTokenExpiry = null; cfg.gmEmail = null;
+  encryptCfg(cfg).then(enc => localStorage.setItem(STORE_KEY, enc));
+  updateGmailStatus();
+  toast('Gmail disconnected', 'info');
+}
+
+function cleanOAuthUrl() {
+  const url = location.origin + location.pathname;
+  history.replaceState({}, document.title, url);
+}
+
+// PKCE helpers
+function generateCodeVerifier() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+async function generateCodeChallenge(verifier) {
+  const data = new TextEncoder().encode(verifier);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+// ═══════════════════════════════════════════════
+//  SHARE / EXPORT / IMPORT
+// ═══════════════════════════════════════════════
+function openShareModal()  { document.getElementById('share-overlay').classList.add('open'); }
+function closeShareModal() { document.getElementById('share-overlay').classList.remove('open'); }
+
+function exportTasks(format = 'json') {
+  const exportData = { version: 2, exportedAt: new Date().toISOString(), tasks };
+  let content, filename, mime;
+  if (format === 'csv') {
+    const headers = ['id','source','title','description','priority','status','board','due'];
+    const rows = tasks.map(t => headers.map(h => `"${(t[h]||'').toString().replace(/"/g,'""')}"`).join(','));
+    content  = [headers.join(','), ...rows].join('\n');
+    filename = `evronai-tasks-${new Date().toISOString().split('T')[0]}.csv`;
+    mime     = 'text/csv';
+  } else {
+    content  = JSON.stringify(exportData, null, 2);
+    filename = `evronai-tasks-${new Date().toISOString().split('T')[0]}.json`;
+    mime     = 'application/json';
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename; a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`📥 Exported ${tasks.length} tasks as ${format.toUpperCase()}`, 'ok');
+}
+
+function importTasks() {
+  const raw = document.getElementById('import-json')?.value.trim();
+  if (!raw) { toast('Paste JSON in the text area first', 'err'); return; }
+  try {
+    const data = JSON.parse(raw);
+    const imported = data.tasks || (Array.isArray(data) ? data : null);
+    if (!imported) throw new Error('No tasks array found');
+    let added = 0;
+    imported.forEach(t => {
+      if (!t.id || !t.title) return;
+      if (!tasks.some(x => x.id === t.id)) { tasks.push(t); added++; }
+    });
+    saveTasks(); updateStats(); renderTasks();
+    closeShareModal();
+    toast(`✅ Imported ${added} tasks`, 'ok');
+  } catch(e) { toast('Import failed: ' + e.message, 'err'); }
+}
+
+function importFromFile(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (file.name.endsWith('.csv')) {
+      const lines = e.target.result.split('\n').filter(Boolean);
+      const headers = lines[0].split(',').map(h => h.replace(/"/g,''));
+      let added = 0;
+      lines.slice(1).forEach(line => {
+        const vals = line.match(/(".*?"|[^,]+)/g)?.map(v => v.replace(/^"|"$/g,'').replace(/""/g,'"')) || [];
+        const t = {};
+        headers.forEach((h, i) => t[h] = vals[i] || '');
+        if (t.id && t.title && !tasks.some(x => x.id === t.id)) { tasks.push(t); added++; }
+      });
+      saveTasks(); updateStats(); renderTasks();
+      closeShareModal();
+      toast(`✅ Imported ${added} tasks from CSV`, 'ok');
+    } else {
+      document.getElementById('import-json').value = e.target.result;
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Also update Gmail sync in syncAll to use real OAuth
+async function syncGmailReal() {
+  if (!cfg.gmAccessToken) return [];
+  try {
+    const result = await syncGmail();
+    return result;
+  } catch(e) {
+    toast('⚠️ Gmail sync failed: ' + e.message, 'err');
+    return [];
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  const inInput = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); document.getElementById('q').focus(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'n') { e.preventDefault(); openAddModal(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'e') { e.preventDefault(); openShareModal(); }
+  if (e.key === 'Escape') { closeAddModal(); closeConfig(); closeShareModal(); }
+  if (!inInput && e.key === '/') { e.preventDefault(); document.getElementById('q').focus(); }
+});
+
+// ═══════════════════════════════════════════════
+//  INIT — async to load encrypted config
+// ═══════════════════════════════════════════════
+(async function init() {
+  // Load encrypted config
+  const stored = localStorage.getItem(STORE_KEY) || localStorage.getItem('evron-cfg') || '{}';
+  cfg = await decryptCfg(stored);
+
+  // Load tasks
+  const storedTasks = localStorage.getItem(TASKS_KEY) || localStorage.getItem('evron-tasks') || '[]';
+  try { tasks = JSON.parse(storedTasks); } catch { tasks = []; }
+  if (!tasks.length) { tasks = getDemoTasks(); saveTasks(); }
+
+  // Seed seenTaskIds with existing tasks so we don't notify for old ones
+  tasks.forEach(t => seenTaskIds.add(t.id));
+
+  // Handle Gmail OAuth callback (check URL params)
+  if (location.search.includes('code=')) await handleOAuthCallback();
+
+  updateAPIStatus();
+  updateStats();
+  renderTasks();
+
+  // Request notification permission silently on load
+  requestNotifications();
+  // Check for alerts 30 seconds after load and every 5 minutes
+  setTimeout(() => checkNotifications(), 30000);
+  setInterval(() => checkNotifications(), 5 * 60000);
+
+  toast('🚀 EvronAI ready  ·  ⌘K search  ·  ⌘N new task  ·  ⌘E export', 'info');
+})();
+</script>
+</body>
+</html>
