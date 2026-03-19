@@ -2808,12 +2808,11 @@ function showNotifications() {
 // Always use origin + pathname with no trailing slash except for root.
 // This must exactly match what's registered in Google Cloud Console.
 function getRedirectUri() {
-  const path = location.pathname.replace(/\/[^/]*\.[^/]+$/, '');
-  // Strip any filename from the path, return origin + clean path (no trailing slash)
-  // Google requires: no path component OR path with no trailing slash
-  // e.g. https://user.github.io/evronai  (not /evronai/)
-  //      http://localhost:8080            (not http://localhost:8080/)
-  return location.origin + path;
+  // Use the exact current URL minus query string and hash.
+  // For GitHub Pages: https://evronai.github.io/Evronai-pm-intelligence/
+  // For local file:   http://localhost:8080/evronai.html
+  // Google requires this to exactly match what's registered in Cloud Console.
+  return location.origin + location.pathname;
 }
 
 function updateGmailStatus() {
