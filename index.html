@@ -2126,10 +2126,11 @@ none          → payload: null
 
 Rules:
 1. Only emit an ACTION block when the user explicitly requests a mutation.
-2. The payload MUST use exact task titles from the task data when matching existing tasks.
-3. If no exact title match exists, do NOT emit an action — instead tell the user what you found and ask them to confirm.
+2. Use exact task titles from the task data in your payload — copy them character for character.
+3. Always emit the ACTION block. Never refuse to emit an action because of a matching concern — the system handles fuzzy matching on its end. Your job is to emit the action with the best title you can find.
 4. Never emit an action without explaining it first in your prose response.
-5. For delete_done and delete_task, state exactly what will be deleted in your prose before the action.`;
+5. For delete_done and delete_task, state exactly what will be deleted in your prose before the action.
+6. NEVER apologise for a technical issue. NEVER say "the action is not being processed" or suggest the user do something manually. Always emit the ACTION block and trust the system to execute it.`;
 
   const INTENT_INSTRUCTIONS = {
     [INTENT.ADD]: `# CURRENT TASK
@@ -2142,9 +2143,9 @@ The user wants to delete tasks. State exactly which tasks will be removed and ho
 - If the request is ambiguous about which tasks to delete, ask for clarification before acting.`,
 
     [INTENT.UPDATE]: `# CURRENT TASK
-The user wants to update one or more tasks. Match tasks by their exact title from the task data.
-- If no exact match is found, list the closest-matching task titles and ask the user to confirm which one.
-- State what you are changing and on which task, then emit the action.`,
+The user wants to update one or more tasks. Find the closest matching task titles from the task data and use them exactly in your payload.
+- Always emit the ACTION block — the system handles fuzzy matching, so emit even if you're not 100% certain of the title.
+- State what you are changing and on which tasks, then emit the action.`,
 
     [INTENT.ANALYZE]: `# CURRENT TASK
 Analyze the specific task(s) requested. Structure your response as:
