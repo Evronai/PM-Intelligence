@@ -2234,7 +2234,7 @@ function processAIActions(text) {
       toast(`✅ AI added ${payload.length} tasks`, 'ok');
 
     } else if (action === 'update_task' && payload?.match) {
-      const t = tasks.find(x => x.title === payload.match || x.id === payload.match);
+      const t = findTaskByMatch(payload.match);
       if (t && payload.changes) {
         Object.assign(t, payload.changes);
         saveTasks(); updateStats(); renderTasks();
@@ -2244,7 +2244,7 @@ function processAIActions(text) {
     } else if (action === 'update_tasks' && Array.isArray(payload)) {
       let updated = 0;
       payload.forEach(({ match, changes }) => {
-        const t = tasks.find(x => x.title === match || x.id === match);
+        const t = findTaskByMatch(match);
         if (t && changes) { Object.assign(t, changes); updated++; }
       });
       if (updated) { saveTasks(); updateStats(); renderTasks(); toast(`✏️ Updated ${updated} tasks`, 'ok'); }
@@ -2256,17 +2256,27 @@ function processAIActions(text) {
       if (n) toast(`🗑️ Deleted ${n} completed tasks`, 'ok');
 
     } else if (action === 'delete_task' && payload?.match) {
-      const before = tasks.length;
-      tasks = tasks.filter(t => t.title !== payload.match && t.id !== payload.match);
-      if (tasks.length < before) { saveTasks(); updateStats(); renderTasks(); toast('🗑️ Task deleted', 'ok'); }
+      const target = findTaskByMatch(payload.match);
+      if (target) {
+        tasks = tasks.filter(t => t.id !== target.id);
+        saveTasks(); updateStats(); renderTasks(); toast('🗑️ Task deleted', 'ok');
+      }
     }
   } catch(e) { console.warn('Action processing error:', e); }
 
   return cleanText;
 }
 
-// ═══════════════════════════════════════════════
-//  HISTORY SUMMARISATION
+// Fuzzy task matcher — tries exact, then case-insensitive, then partial
+function findTaskByMatch(match) {
+  if (!match) return null;
+  const m = match.trim().toLowerCase();
+  return tasks.find(x => x.id === match) ||
+         tasks.find(x => x.title.trim() === match.trim()) ||
+         tasks.find(x => x.title.trim().toLowerCase() === m) ||
+         tasks.find(x => x.title.trim().toLowerCase().includes(m)) ||
+         tasks.find(x => m.includes(x.title.trim().toLowerCase()));
+}
 //  When history exceeds HISTORY_MAX turns, compress
 //  the oldest half into a prose summary so context
 //  is never lost even in long conversations.
